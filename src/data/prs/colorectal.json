@@ -1,0 +1,729 @@
+{
+  "pgsId": "PGS004240",
+  "cancerType": "colorectal",
+  "name": "CRC PRS (Colorectal cancer)",
+  "trait": "Colorectal cancer",
+  "genomeBuild": "NR",
+  "weightType": "log(OR)",
+  "citation": "Fan L et al. Int J Cancer (2023). doi:10.1002/ijc.34544",
+  "variants": [
+    {
+      "rsid": "rs6066825",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "20",
+      "pos": 47340117
+    },
+    {
+      "rsid": "rs6063514",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "20",
+      "pos": 49055318
+    },
+    {
+      "rsid": "rs1741640",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.131028262406404,
+      "chr": "20",
+      "pos": 60932414
+    },
+    {
+      "rsid": "rs145364999",
+      "effectAllele": "T",
+      "otherAllele": "A",
+      "weight": 0.45107561936021673,
+      "chr": "5",
+      "pos": 98206082
+    },
+    {
+      "rsid": "rs72942485",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.14842000511827322,
+      "chr": "3",
+      "pos": 112999560
+    },
+    {
+      "rsid": "rs4360494",
+      "effectAllele": "G",
+      "otherAllele": "C",
+      "weight": 0.04879016416943205,
+      "chr": "1",
+      "pos": 38455891
+    },
+    {
+      "rsid": "rs12144319",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "1",
+      "pos": 55246035
+    },
+    {
+      "rsid": "rs448513",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.058268908123975824,
+      "chr": "2",
+      "pos": 159964552
+    },
+    {
+      "rsid": "rs983402",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.04879016416943205,
+      "chr": "2",
+      "pos": 199781586
+    },
+    {
+      "rsid": "rs10049390",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.058268908123975824,
+      "chr": "3",
+      "pos": 133701119
+    },
+    {
+      "rsid": "rs1391441",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.04879016416943205,
+      "chr": "4",
+      "pos": 106128760
+    },
+    {
+      "rsid": "rs11727676",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.0769610411361284,
+      "chr": "4",
+      "pos": 145659064
+    },
+    {
+      "rsid": "rs9271695",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "6",
+      "pos": 32593080
+    },
+    {
+      "rsid": "rs12672022",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.06765864847381486,
+      "chr": "7",
+      "pos": 45136423
+    },
+    {
+      "rsid": "rs1537372",
+      "effectAllele": "G",
+      "otherAllele": "T",
+      "weight": 0.04879016416943205,
+      "chr": "9",
+      "pos": 22103183
+    },
+    {
+      "rsid": "rs34405347",
+      "effectAllele": "T",
+      "otherAllele": "G",
+      "weight": 0.0769610411361284,
+      "chr": "9",
+      "pos": 101679752
+    },
+    {
+      "rsid": "rs10980628",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.04879016416943205,
+      "chr": "9",
+      "pos": 113671403
+    },
+    {
+      "rsid": "rs2186607",
+      "effectAllele": "T",
+      "otherAllele": "A",
+      "weight": 0.04879016416943205,
+      "chr": "11",
+      "pos": 101656397
+    },
+    {
+      "rsid": "rs11610543",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.04879016416943205,
+      "chr": "12",
+      "pos": 43134191
+    },
+    {
+      "rsid": "rs4759277",
+      "effectAllele": "A",
+      "otherAllele": "C",
+      "weight": 0.06765864847381486,
+      "chr": "12",
+      "pos": 57533690
+    },
+    {
+      "rsid": "rs7333607",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "13",
+      "pos": 37462010
+    },
+    {
+      "rsid": "rs78341008",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.12221763272424911,
+      "chr": "13",
+      "pos": 73791554
+    },
+    {
+      "rsid": "rs8000189",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.04879016416943205,
+      "chr": "13",
+      "pos": 111075881
+    },
+    {
+      "rsid": "rs17094983",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.09531017980432493,
+      "chr": "14",
+      "pos": 59189361
+    },
+    {
+      "rsid": "rs56324967",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "15",
+      "pos": 67402824
+    },
+    {
+      "rsid": "rs9930005",
+      "effectAllele": "C",
+      "otherAllele": "A",
+      "weight": 0.04879016416943205,
+      "chr": "16",
+      "pos": 80043258
+    },
+    {
+      "rsid": "rs1078643",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "17",
+      "pos": 10707241
+    },
+    {
+      "rsid": "rs983318",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "17",
+      "pos": 70413253
+    },
+    {
+      "rsid": "rs75954926",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.09531017980432493,
+      "chr": "17",
+      "pos": 81061048
+    },
+    {
+      "rsid": "rs34797592",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.08617769624105241,
+      "chr": "19",
+      "pos": 16417198
+    },
+    {
+      "rsid": "rs73068325",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "19",
+      "pos": 59079096
+    },
+    {
+      "rsid": "rs6031311",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.06765864847381486,
+      "chr": "20",
+      "pos": 42666475
+    },
+    {
+      "rsid": "rs2738783",
+      "effectAllele": "T",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "20",
+      "pos": 62308612
+    },
+    {
+      "rsid": "rs61389091",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.20701416938432612,
+      "chr": "11",
+      "pos": 74427921
+    },
+    {
+      "rsid": "rs11884596",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.058268908123975824,
+      "chr": "2",
+      "pos": 199612407
+    },
+    {
+      "rsid": "rs78368589",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.131028262406404,
+      "chr": "5",
+      "pos": 1240204
+    },
+    {
+      "rsid": "rs7708610",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.03922071315328133,
+      "chr": "5",
+      "pos": 40102443
+    },
+    {
+      "rsid": "rs2516420",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.09531017980432493,
+      "chr": "6",
+      "pos": 31449620
+    },
+    {
+      "rsid": "rs4313119",
+      "effectAllele": "G",
+      "otherAllele": "T",
+      "weight": 0.058268908123975824,
+      "chr": "8",
+      "pos": 128571855
+    },
+    {
+      "rsid": "rs3217874",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.0769610411361284,
+      "chr": "12",
+      "pos": 4400808
+    },
+    {
+      "rsid": "rs17816465",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "15",
+      "pos": 33156386
+    },
+    {
+      "rsid": "rs28488",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "20",
+      "pos": 6762221
+    },
+    {
+      "rsid": "rs994308",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.0769610411361284,
+      "chr": "20",
+      "pos": 6603622
+    },
+    {
+      "rsid": "rs72647484",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.02955880224154443,
+      "chr": "1",
+      "pos": 22587728
+    },
+    {
+      "rsid": "rs6678517",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.04879016416943205,
+      "chr": "1",
+      "pos": 183002639
+    },
+    {
+      "rsid": "rs17011141",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "1",
+      "pos": 222112634
+    },
+    {
+      "rsid": "rs3731861",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "2",
+      "pos": 219191256
+    },
+    {
+      "rsid": "rs35470271",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.12221763272424911,
+      "chr": "3",
+      "pos": 40915239
+    },
+    {
+      "rsid": "rs6781752",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.06765864847381486,
+      "chr": "3",
+      "pos": 66365163
+    },
+    {
+      "rsid": "rs9876206",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.02955880224154443,
+      "chr": "3",
+      "pos": 169517436
+    },
+    {
+      "rsid": "rs13149359",
+      "effectAllele": "A",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "4",
+      "pos": 94938618
+    },
+    {
+      "rsid": "rs2735940",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.09531017980432493,
+      "chr": "5",
+      "pos": 1296486
+    },
+    {
+      "rsid": "rs12514517",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.08617769624105241,
+      "chr": "5",
+      "pos": 40280076
+    },
+    {
+      "rsid": "rs755229494",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.62057648772511,
+      "chr": "5",
+      "pos": 112097351
+    },
+    {
+      "rsid": "rs4976270",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "5",
+      "pos": 134467220
+    },
+    {
+      "rsid": "rs16878812",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.08617769624105241,
+      "chr": "6",
+      "pos": 35569562
+    },
+    {
+      "rsid": "rs9470361",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.04879016416943205,
+      "chr": "6",
+      "pos": 36623379
+    },
+    {
+      "rsid": "rs62396735",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.02955880224154443,
+      "chr": "6",
+      "pos": 41702582
+    },
+    {
+      "rsid": "rs62404966",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.058268908123975824,
+      "chr": "6",
+      "pos": 55712124
+    },
+    {
+      "rsid": "rs16892766",
+      "effectAllele": "C",
+      "otherAllele": "A",
+      "weight": 0.1823215567939546,
+      "chr": "8",
+      "pos": 117630683
+    },
+    {
+      "rsid": "rs6983267",
+      "effectAllele": "G",
+      "otherAllele": "T",
+      "weight": 0.13976194237515863,
+      "chr": "8",
+      "pos": 128413305
+    },
+    {
+      "rsid": "rs11255841",
+      "effectAllele": "T",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "10",
+      "pos": 8739580
+    },
+    {
+      "rsid": "rs10821907",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.0769610411361284,
+      "chr": "10",
+      "pos": 52648454
+    },
+    {
+      "rsid": "rs704017",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.0769610411361284,
+      "chr": "10",
+      "pos": 80819132
+    },
+    {
+      "rsid": "rs11190164",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "10",
+      "pos": 101351704
+    },
+    {
+      "rsid": "rs12246635",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.0769610411361284,
+      "chr": "10",
+      "pos": 114288619
+    },
+    {
+      "rsid": "rs11196170",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.058268908123975824,
+      "chr": "10",
+      "pos": 114722621
+    },
+    {
+      "rsid": "rs174533",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.0769610411361284,
+      "chr": "11",
+      "pos": 61549025
+    },
+    {
+      "rsid": "rs7121958",
+      "effectAllele": "G",
+      "otherAllele": "T",
+      "weight": 0.08617769624105241,
+      "chr": "11",
+      "pos": 74280012
+    },
+    {
+      "rsid": "rs3087967",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.10436001532424286,
+      "chr": "11",
+      "pos": 111156836
+    },
+    {
+      "rsid": "rs35808169",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.09531017980432493,
+      "chr": "12",
+      "pos": 4368607
+    },
+    {
+      "rsid": "rs3217810",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.14842000511827322,
+      "chr": "12",
+      "pos": 4388271
+    },
+    {
+      "rsid": "rs2250430",
+      "effectAllele": "T",
+      "otherAllele": "A",
+      "weight": 0.06765864847381486,
+      "chr": "12",
+      "pos": 6421174
+    },
+    {
+      "rsid": "rs2710310",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.0,
+      "chr": "12",
+      "pos": 12035649
+    },
+    {
+      "rsid": "rs12372718",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "12",
+      "pos": 51171090
+    },
+    {
+      "rsid": "rs597808",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "12",
+      "pos": 111973358
+    },
+    {
+      "rsid": "rs7300312",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "12",
+      "pos": 115890922
+    },
+    {
+      "rsid": "rs35107139",
+      "effectAllele": "C",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "14",
+      "pos": 54419106
+    },
+    {
+      "rsid": "rs9924886",
+      "effectAllele": "A",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "16",
+      "pos": 68743939
+    },
+    {
+      "rsid": "rs12149163",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.058268908123975824,
+      "chr": "16",
+      "pos": 86339315
+    },
+    {
+      "rsid": "rs62042090",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.03922071315328133,
+      "chr": "16",
+      "pos": 86703949
+    },
+    {
+      "rsid": "rs4968127",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.058268908123975824,
+      "chr": "17",
+      "pos": 809643
+    },
+    {
+      "rsid": "rs11874392",
+      "effectAllele": "A",
+      "otherAllele": "T",
+      "weight": 0.14842000511827322,
+      "chr": "18",
+      "pos": 46453156
+    },
+    {
+      "rsid": "rs28840750",
+      "effectAllele": "T",
+      "otherAllele": "G",
+      "weight": 0.19885085874516517,
+      "chr": "19",
+      "pos": 33519927
+    },
+    {
+      "rsid": "rs1963413",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.03922071315328133,
+      "chr": "19",
+      "pos": 41871573
+    },
+    {
+      "rsid": "rs189583",
+      "effectAllele": "G",
+      "otherAllele": "C",
+      "weight": 0.09531017980432493,
+      "chr": "20",
+      "pos": 6376457
+    },
+    {
+      "rsid": "rs4813802",
+      "effectAllele": "G",
+      "otherAllele": "T",
+      "weight": 0.06765864847381486,
+      "chr": "20",
+      "pos": 6699595
+    },
+    {
+      "rsid": "rs11087784",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.08617769624105241,
+      "chr": "20",
+      "pos": 7740976
+    },
+    {
+      "rsid": "rs6058093",
+      "effectAllele": "C",
+      "otherAllele": "A",
+      "weight": 0.058268908123975824,
+      "chr": "20",
+      "pos": 33213196
+    }
+  ],
+  "population": {
+    "mean": 4.682943,
+    "sd": 0.715109,
+    "ancestry": "European (approximated from effect allele frequencies in scoring file)",
+    "source": "PGS Catalog PGS004240; HWE approximation from reported allele frequencies"
+  }
+}

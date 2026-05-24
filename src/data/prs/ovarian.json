@@ -1,0 +1,137 @@
+{
+  "pgsId": "PGS000048",
+  "cancerType": "ovarian",
+  "name": "Ovarian cancer PRS",
+  "trait": "Ovarian cancer",
+  "genomeBuild": "GRCh37",
+  "weightType": "NR",
+  "citation": "Kuchenbaecker KB et al. J Natl Cancer Inst (2017). doi:10.1093/jnci/djw302",
+  "variants": [
+    {
+      "rsid": "rs56318008",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.11,
+      "chr": "1",
+      "pos": 22470407
+    },
+    {
+      "rsid": "rs58722170",
+      "effectAllele": "C",
+      "otherAllele": "G",
+      "weight": 0.12,
+      "chr": "1",
+      "pos": 38096421
+    },
+    {
+      "rsid": "rs6755777",
+      "effectAllele": "T",
+      "otherAllele": "G",
+      "weight": 0.14,
+      "chr": "2",
+      "pos": 177043226
+    },
+    {
+      "rsid": "rs62274042",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.46,
+      "chr": "3",
+      "pos": 156435952
+    },
+    {
+      "rsid": "rs17329882",
+      "effectAllele": "C",
+      "otherAllele": "A",
+      "weight": 0.1,
+      "chr": "4",
+      "pos": 119949960
+    },
+    {
+      "rsid": "rs2242652",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": 0.15,
+      "chr": "5",
+      "pos": 1280028
+    },
+    {
+      "rsid": "rs116133110",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": -0.1,
+      "chr": "6",
+      "pos": 28480635
+    },
+    {
+      "rsid": "rs76837345",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.22,
+      "chr": "8",
+      "pos": 82668818
+    },
+    {
+      "rsid": "rs1400482",
+      "effectAllele": "A",
+      "otherAllele": "G",
+      "weight": -0.26,
+      "chr": "8",
+      "pos": 129541931
+    },
+    {
+      "rsid": "rs3814113",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": -0.24,
+      "chr": "9",
+      "pos": 16907967
+    },
+    {
+      "rsid": "rs635634",
+      "effectAllele": "T",
+      "otherAllele": "C",
+      "weight": 0.11,
+      "chr": "9",
+      "pos": 136155000
+    },
+    {
+      "rsid": "rs3744763",
+      "effectAllele": "G",
+      "otherAllele": "A",
+      "weight": 0.11,
+      "chr": "17",
+      "pos": 36090885
+    },
+    {
+      "rsid": "rs1879586",
+      "effectAllele": "G",
+      "otherAllele": "C",
+      "weight": 0.16,
+      "chr": "17",
+      "pos": 43567337
+    },
+    {
+      "rsid": "rs7207826",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.14,
+      "chr": "17",
+      "pos": 46500673
+    },
+    {
+      "rsid": "rs4808075",
+      "effectAllele": "C",
+      "otherAllele": "T",
+      "weight": 0.17,
+      "chr": "19",
+      "pos": 17390291
+    }
+  ],
+  "population": {
+    "mean": 0.834,
+    "sd": 0.490186,
+    "ancestry": "European (approximated from effect allele frequencies in scoring file)",
+    "source": "PGS Catalog PGS000048; HWE approximation from reported allele frequencies"
+  }
+}
