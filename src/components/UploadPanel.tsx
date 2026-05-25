@@ -42,6 +42,26 @@ export function UploadPanel({ onAnalyze, loading }: UploadPanelProps) {
         raw DNA). Accepts <code className="text-xs">.txt</code> or{" "}
         <code className="text-xs">.zip</code> (we read the text inside).
       </p>
+      <p className="mt-2 text-sm text-slate-600">
+        No real DNA handy?{" "}
+        <a
+          href="/test-data/synthetic-23andme-raw.zip"
+          download
+          className="font-medium text-brand-600 hover:underline"
+        >
+          Download synthetic test genome
+        </a>{" "}
+        (~620k SNPs, safe fake data) or get it from{" "}
+        <a
+          href="https://github.com/vmbharanidharan-ai/PRS_test/blob/cursor/prs-screen-app/fixtures/synthetic-23andme-raw.zip"
+          className="font-medium text-brand-600 hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub fixtures/
+        </a>
+        .
+      </p>
 
       <div
         className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-brand-200 bg-brand-50/50 px-6 py-12 transition hover:border-brand-400"

@@ -10,6 +10,7 @@
     "lint": "next lint",
     "fetch-pgs": "python3 scripts/fetch_pgs_weights.py",
     "prepare-data": "python3 scripts/fetch_pgs_weights.py && python3 scripts/build_bundled_weights.py",
+    "generate-test-data": "python3 scripts/generate_test_genotype.py",
     "cap:sync": "npm run build:mobile && npx cap sync",
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",

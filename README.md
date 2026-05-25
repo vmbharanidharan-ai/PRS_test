@@ -63,7 +63,18 @@ Commit updated `src/data/prs/*.json` after validating scores in [PGS Catalog](ht
 
 ### 4. Test without real DNA
 
-Use a downloaded raw 23andMe/Ancestry file, or a subset of a public genotype (must include rsIDs from bundled weights). The app expects **≥100k variants** (full raw export).
+**Synthetic full genome (recommended):**
+
+```bash
+# Already in repo after clone:
+#   fixtures/synthetic-23andme-raw.zip   (~620k SNPs, ~6.5 MB)
+# Or regenerate:
+npm run generate-test-data
+```
+
+Upload `fixtures/synthetic-23andme-raw.zip` in the app, or download from the UI link (“Download synthetic test genome”). See [fixtures/README.md](fixtures/README.md).
+
+This is **fake data** (not a real person), but matches 23andMe format and includes all SNPs needed for PRS scoring.
 
 ---
 

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function TermsPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 prose prose-slate">
@@ -18,9 +20,9 @@ export default function TermsPage() {
         </li>
       </ul>
       <p>
-        <a href="/" className="text-brand-600 hover:underline">
+        <Link href="/" className="text-brand-600 hover:underline">
           ← Back to app
-        </a>
+        </Link>
       </p>
     </main>
   );

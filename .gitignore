@@ -12,3 +12,7 @@ next-env.d.ts
 .DS_Store
 data/pgs/raw/
 data/pgs/*.txt.gz
+
+# Large regenerated intermediates (committed: synthetic-23andme-raw.zip)
+fixtures/synthetic-23andme-raw.txt
+fixtures/synthetic-23andme-raw.txt.gz

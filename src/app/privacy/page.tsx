@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 prose prose-slate">
@@ -21,9 +23,9 @@ export default function PrivacyPage() {
         analysis stays on-device.
       </p>
       <p>
-        <a href="/" className="text-brand-600 hover:underline">
+        <Link href="/" className="text-brand-600 hover:underline">
           ← Back to app
-        </a>
+        </Link>
       </p>
     </main>
   );
