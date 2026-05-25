@@ -1,0 +1,30 @@
+---
+description: GeneScope genomics pipeline upgrade constraints
+globs:
+  - "**/*"
+---
+
+# GeneScope research pipeline upgrade
+
+We are upgrading from heuristic PRS approximation to **cohort-calibrated** pipeline.
+
+## Constraints
+
+- DO NOT rewrite UI or report structure
+- DO NOT remove browser-first local DNA mode
+- DO preserve API contracts: `buildAbsoluteRiskBreakdown`, `populationFromPrs`, `computePrsForScore`
+
+## Replace internally
+
+- Reference panels → 1000G PLINK + PCA (`genomics-pipeline/ancestry/`)
+- Risk coefficients → UKB Cox (`genomics-pipeline/models/`, `public/models/*_cox.json`)
+- PRS computation → PRS-CS / LDpred2 (`genomics-pipeline/prs/`)
+- Evaluation → CLI only (`genomics-pipeline/evaluation/`) — no new UI pages unless requested
+
+## Risk engine entry point
+
+`src/lib/risk-engine.ts` (not `joint-risk-model.ts` directly from reports)
+
+## Claims
+
+Educational / research-grade only — not clinically validated.

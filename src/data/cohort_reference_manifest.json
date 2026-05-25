@@ -1,0 +1,62 @@
+{
+  "version": "1kg_bridge_v1",
+  "source": "1000 Genomes Phase 3 PLINK (update after run_plink_1kg.sh)",
+  "cancers": {
+    "prostate": {
+      "AFR": {
+        "path": "prs-reference/prostate/PGS000662/AFR.json",
+        "nIndividuals": 661
+      },
+      "EAS": {
+        "path": "prs-reference/prostate/PGS000662/EAS.json",
+        "nIndividuals": 504
+      },
+      "EUR": {
+        "path": "prs-reference/prostate/PGS000662/EUR.json",
+        "nIndividuals": 503
+      }
+    },
+    "breast": {
+      "AFR": {
+        "path": "prs-reference/breast/PGS005104/AFR.json",
+        "nIndividuals": 661
+      },
+      "EAS": {
+        "path": "prs-reference/breast/PGS005104/EAS.json",
+        "nIndividuals": 504
+      },
+      "EUR": {
+        "path": "prs-reference/breast/PGS005104/EUR.json",
+        "nIndividuals": 503
+      }
+    },
+    "ovarian": {
+      "AFR": {
+        "path": "prs-reference/ovarian/PGS000048/AFR.json",
+        "nIndividuals": 661
+      },
+      "EAS": {
+        "path": "prs-reference/ovarian/PGS000048/EAS.json",
+        "nIndividuals": 504
+      },
+      "EUR": {
+        "path": "prs-reference/ovarian/PGS000048/EUR.json",
+        "nIndividuals": 503
+      }
+    },
+    "colorectal": {
+      "AFR": {
+        "path": "prs-reference/colorectal/PGS004240/AFR.json",
+        "nIndividuals": 661
+      },
+      "EAS": {
+        "path": "prs-reference/colorectal/PGS004240/EAS.json",
+        "nIndividuals": 504
+      },
+      "EUR": {
+        "path": "prs-reference/colorectal/PGS004240/EUR.json",
+        "nIndividuals": 503
+      }
+    }
+  }
+}

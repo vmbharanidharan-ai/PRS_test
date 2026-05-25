@@ -1,0 +1,16 @@
+{
+  "cancer": "ovarian",
+  "version": "placeholder_v1",
+  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "coefficients": {
+    "prs": 0.18,
+    "age": 0.012,
+    "fh_ovarian_first_degree": 1.1,
+    "fh_breast_first_degree": 0.41,
+    "pc1": 0,
+    "pc2": 0
+  },
+  "baseline_hazard_scale": 1,
+  "baseline_lifetime_risk": 0.012,
+  "notes": ["Placeholder — educational only"]
+}

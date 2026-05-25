@@ -1,0 +1,20 @@
+{
+  "cancer": "breast",
+  "version": "placeholder_v1",
+  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "coefficients": {
+    "prs": 0.25,
+    "age": 0.012,
+    "fh_breast_first_degree": 0.69,
+    "fh_colorectal_first_degree": 0,
+    "fh_prostate_first_degree": 0,
+    "pc1": 0,
+    "pc2": 0
+  },
+  "baseline_hazard_scale": 1,
+  "baseline_lifetime_risk": 0.13,
+  "notes": [
+    "Placeholder Cox betas on log-RR scale for pipeline wiring.",
+    "Run: python3 genomics-pipeline/models/fit_ukbb_models.py"
+  ]
+}

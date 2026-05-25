@@ -28,6 +28,8 @@ export interface UserProfile {
   ancestryProportions?: Record<string, number>;
   ancestryConfidence?: number;
   ancestryInferenceMethod?: "pca_1kg" | "self_report" | "uniform_mixture";
+  /** PC1–PC10 from 1000G projection when available */
+  ancestryPcs?: number[];
   familyHistory?: FamilyHistoryInput;
 }
 

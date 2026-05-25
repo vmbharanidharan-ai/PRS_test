@@ -1,6 +1,10 @@
 # GeneScope genomics pipeline
 
-Research-grade path: **do not rebuild PRS from scratch in TypeScript** — use standard tools, then joint log-risk in app/backend.
+**Upgrade directive:** cohort-calibrated research pipeline. Frontend unchanged; internal risk engine swapped via `src/lib/risk-engine.ts`.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+Research-grade path: **do not rebuild PRS from scratch in TypeScript** — use standard tools, then Cox / log-risk in app.
 
 ## Tool stack (use these, do not reimplement)
 

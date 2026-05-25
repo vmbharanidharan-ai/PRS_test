@@ -1,0 +1,15 @@
+{
+  "cancer": "prostate",
+  "version": "placeholder_v1",
+  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "coefficients": {
+    "prs": 0.2,
+    "age": 0.015,
+    "fh_prostate_first_degree": 0.69,
+    "pc1": 0,
+    "pc2": 0
+  },
+  "baseline_hazard_scale": 1,
+  "baseline_lifetime_risk": 0.125,
+  "notes": ["Placeholder — educational only"]
+}
