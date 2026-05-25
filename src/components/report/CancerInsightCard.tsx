@@ -55,8 +55,14 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
         <div className="mt-3 space-y-2 text-xs text-slate-500">
           {prs && (
             <p>
-              PRS: {prs.pgsId} · {prs.percentile.toFixed(0)}th percentile ·{" "}
-              {Math.round(prs.matchRate * 100)}% match
+              PRS: {prs.pgsId} · {prs.percentile.toFixed(0)}th percentile
+              {prs.referencePopulation
+                ? ` · ref ${prs.referencePopulation} (n≈${prs.referenceNIndividuals ?? "?"})`
+                : ""}{" "}
+              · {Math.round(prs.matchRate * 100)}% match
+              {prs.calibrationMethod && (
+                <span className="block">Calibration: {prs.calibrationMethod}</span>
+              )}
             </p>
           )}
           <p>

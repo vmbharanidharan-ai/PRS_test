@@ -21,10 +21,10 @@ export function MethodologySection({
         )}
         {(precisionLevel === "genetic" || precisionLevel === "demo") && (
           <p>
-            <strong>DNA mode:</strong> PGS Catalog weights, vectorized scoring,
-            Z-score → RR<sub>PRS</sub> = exp(Z·ln(HR/SD)), joint model with clinical
-            RR. Executive index = max percentile across cancers (not averaged).
-            Pathogenic founder screen runs before PRS.
+            <strong>DNA mode:</strong> PGS Catalog weights → raw PRS → empirical
+            percentile within ancestry reference panel (1000 Genomes EUR/AFR/EAS).
+            No Hardy–Weinberg Gaussian CDF. RR<sub>PRS</sub> from empirical Z;
+            absolute risk via Chatterjee joint model. Pathogenic screen runs first.
           </p>
         )}
         <p>

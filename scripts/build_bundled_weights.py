@@ -132,7 +132,11 @@ def _fetch_maf(rsid: str) -> float | None:
 
 
 def population_stats(variants: list[dict], fetch_missing: bool = True) -> tuple[float, float]:
-    """HWE-based mean and SD of PRS across reference population."""
+    """
+    HWE-based mean/SD — LEGACY FALLBACK ONLY for src/data/prs/*.json metadata.
+    Runtime percentiles use src/data/prs-reference/ (empirical 1KG panels).
+    See scripts/reference_panel/README.md.
+    """
     mean = 0.0
     var = 0.0
     skipped = 0

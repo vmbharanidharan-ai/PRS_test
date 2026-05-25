@@ -7,6 +7,7 @@ import {
 } from "@/components/FamilyHistorySection";
 import { FamilyHistoryWizard } from "@/components/onboarding/FamilyHistoryWizard";
 import type { AnalysisOptions } from "@/hooks/useAnalysis";
+import type { AncestryGroup } from "@/lib/types";
 
 interface DnaUploadFlowProps {
   onUpload: (file: File, opts: AnalysisOptions) => void;
@@ -26,6 +27,7 @@ export function DnaUploadFlow({
   const [file, setFile] = useState<File | null>(null);
   const [sex, setSex] = useState<"" | "female" | "male">("");
   const [age, setAge] = useState("");
+  const [ancestry, setAncestry] = useState<AncestryGroup>("unknown");
   const [fhStep, setFhStep] = useState(0);
   const [fhDraft, setFhDraft] = useState<FamilyHistoryDraft>({ enabled: true });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,6 +35,8 @@ export function DnaUploadFlow({
   const opts = (): AnalysisOptions => ({
     sex: sex || undefined,
     age: age ? parseInt(age, 10) : undefined,
+    ancestry: ancestry === "unknown" ? undefined : ancestry,
+    ancestryConfidence: ancestry === "unknown" ? 0.5 : 0.85,
     familyHistory: draftToFamilyHistory(fhDraft),
   });
 
@@ -143,6 +147,21 @@ export function DnaUploadFlow({
             />
           </label>
         </div>
+        <label className="mt-4 block text-sm">
+          Genetic ancestry (improves PRS percentile calibration)
+          <select
+            className="mt-1 w-full rounded-lg border px-3 py-2"
+            value={ancestry}
+            onChange={(e) => setAncestry(e.target.value as AncestryGroup)}
+          >
+            <option value="unknown">Prefer not to say / mixed</option>
+            <option value="european">European</option>
+            <option value="african">African</option>
+            <option value="asian">East Asian</option>
+            <option value="hispanic">Hispanic / Latino</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
         {error && <p className="mt-4 text-sm text-rose-700">{error}</p>}
         <div className="mt-6 flex gap-2">
           <button

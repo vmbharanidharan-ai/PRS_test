@@ -12,6 +12,8 @@ import type {
 export interface AnalysisOptions {
   sex?: "female" | "male";
   age?: number;
+  ancestry?: UserProfile["ancestry"];
+  ancestryConfidence?: number;
   familyHistory?: FamilyHistoryInput;
 }
 
@@ -42,6 +44,8 @@ export function useAnalysis() {
         variantCount: parsed.variantCount,
         sex: options.sex,
         age: options.age,
+        ancestry: options.ancestry,
+        ancestryConfidence: options.ancestryConfidence,
         familyHistory: options.familyHistory,
         mode,
       });

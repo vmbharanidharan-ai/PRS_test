@@ -10,6 +10,8 @@
     "lint": "next lint",
     "fetch-pgs": "python3 scripts/fetch_pgs_weights.py",
     "prepare-data": "python3 scripts/fetch_pgs_weights.py && python3 scripts/build_bundled_weights.py",
+    "build-reference": "python3 scripts/reference_panel/build_population_bridge.py",
+    "build-reference:1kg": "bash scripts/reference_panel/run_plink_1kg.sh",
     "generate-test-data": "python3 scripts/generate_test_genotype.py",
     "api:dev": "cd backend && uvicorn app.main:app --reload --port 8000",
     "cap:sync": "npm run build:mobile && npx cap sync",

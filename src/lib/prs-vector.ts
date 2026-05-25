@@ -1,16 +1,17 @@
 /**
- * Batched PRS scoring using typed arrays (SIMD-friendly loops).
- * Avoids per-variant object churn for large consumer genotyping files.
+ * Batched PRS scoring + empirical reference calibration (1000 Genomes–stratified).
  */
 
 import type {
   PrsComputationResult,
   PrsScoreDefinition,
-  RiskTier,
   SnpContribution,
   UserGenotype,
 } from "./types";
-import { zScoreToPercentile, percentileToRiskTier } from "./prs-calculator-utils";
+import type { AncestryGroup } from "./types";
+import { percentileToRiskTier } from "./prs-calculator-utils";
+import { calibratePrsAgainstReference } from "./prs-reference-calibration";
+import { zScoreToPercentile } from "./prs-calculator-utils";
 
 function dosageOfEffectAllele(
   userGenotype: string,
@@ -42,20 +43,18 @@ export function computePrsForScoreVectorized(
   definition: PrsScoreDefinition,
   genotypes: Map<string, UserGenotype>,
   relativeRiskPerSd: number,
+  options?: {
+    ancestry?: AncestryGroup;
+    ancestryConfidence?: number;
+  },
 ): PrsComputationResult {
   const n = definition.variants.length;
-  const weights = new Float64Array(n);
-  const rsids: string[] = new Array(n);
-
   let rawScore = 0;
   let variantsUsed = 0;
   const contributions: SnpContribution[] = [];
 
   for (let i = 0; i < n; i++) {
     const variant = definition.variants[i];
-    rsids[i] = variant.rsid;
-    weights[i] = variant.weight;
-
     const user = genotypes.get(variant.rsid.toLowerCase());
     if (!user) continue;
 
@@ -85,9 +84,39 @@ export function computePrsForScoreVectorized(
 
   const variantsTotal = n;
   const matchRate = variantsTotal > 0 ? variantsUsed / variantsTotal : 0;
-  const { mean, sd } = definition.population;
-  const zScore = sd > 0 ? (rawScore - mean) / sd : 0;
-  const percentile = zScoreToPercentile(zScore);
+
+  const calibrated = calibratePrsAgainstReference(
+    rawScore,
+    definition.cancerType,
+    definition.pgsId,
+    options?.ancestry,
+    options?.ancestryConfidence ?? (options?.ancestry ? 0.85 : 0.5),
+  );
+
+  let percentile: number;
+  let zScore: number;
+  let referencePopulation: string | undefined;
+  let calibrationMethod: string | undefined;
+  let referenceSource: string | undefined;
+  let referenceNIndividuals: number | undefined;
+
+  if (calibrated) {
+    percentile = calibrated.percentile;
+    zScore = calibrated.zScore;
+    referencePopulation = calibrated.selection.usedMixture
+      ? "MULTI"
+      : calibrated.selection.population;
+    calibrationMethod = calibrated.reference.calibrationMethod;
+    referenceSource = calibrated.reference.source;
+    referenceNIndividuals = calibrated.reference.nIndividuals;
+  } else {
+    const { mean, sd } = definition.population;
+    zScore = sd > 0 ? (rawScore - mean) / sd : 0;
+    percentile = zScoreToPercentile(zScore);
+    calibrationMethod = "legacy_hwe";
+    referenceSource = definition.population.source;
+  }
+
   const riskTier = percentileToRiskTier(percentile);
 
   return {
@@ -104,5 +133,9 @@ export function computePrsForScoreVectorized(
     relativeRiskPerSd,
     citation: definition.citation,
     topContributors: contributions.slice(0, 10),
+    referencePopulation,
+    calibrationMethod,
+    referenceSource,
+    referenceNIndividuals,
   };
 }

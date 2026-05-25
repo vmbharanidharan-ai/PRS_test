@@ -57,9 +57,13 @@ function dosageOfEffectAllele(
 export function computePrsForScore(
   definition: PrsScoreDefinition,
   genotypes: Map<string, UserGenotype>,
+  options?: {
+    ancestry?: import("./types").AncestryGroup;
+    ancestryConfidence?: number;
+  },
 ): PrsComputationResult {
   const hr = baselineFor(definition.cancerType).hazardRatioPerSd;
-  return computePrsForScoreVectorized(definition, genotypes, hr);
+  return computePrsForScoreVectorized(definition, genotypes, hr, options);
 }
 
 export function validateMatchRateResult(

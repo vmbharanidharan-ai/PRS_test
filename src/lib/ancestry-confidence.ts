@@ -29,7 +29,7 @@ export function buildAncestryConfidence(
   else if (matchPercent < 60 || applicabilityPercent < 50) level = "low";
 
   warnings.push(
-    "These scores were developed mainly in European-ancestry research cohorts. Accuracy may differ if your genetic ancestry differs.",
+    "PRS percentiles are mapped to ancestry-stratified reference panels (1000 Genomes–style). Uncertain ancestry reduces calibration precision.",
   );
 
   const label =

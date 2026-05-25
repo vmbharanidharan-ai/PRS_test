@@ -132,6 +132,11 @@ export interface PrsComputationResult {
   relativeRiskPerSd?: number;
   citation: string;
   topContributors: SnpContribution[];
+  /** Empirical reference panel used for percentile (not Gaussian HWE) */
+  referencePopulation?: string;
+  calibrationMethod?: string;
+  referenceSource?: string;
+  referenceNIndividuals?: number;
 }
 
 export interface RiskStory {

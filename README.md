@@ -50,10 +50,11 @@ Open **http://localhost:3000** in your browser.
 1. **Pathogenic screen first** — Targeted check for known high-risk BRCA founder and Lynch proxy positions on consumer chips. If positive, PRS is withheld and you see an urgent clinical alert.  
 2. **Read your file** — Supports 23andMe and AncestryDNA raw `.txt` or `.zip` exports.  
 3. **Score each cancer** — PGS Catalog weights, vectorized in-browser.  
-4. **Calibrated absolute risk** — Joint model: P = 1 − (1 − R_base)^(RR_PRS × RR_clinical) (Chatterjee et al., 2016; Lewis et al., 2021).  
-5. **Executive index** — Overall summary uses your **highest** single-cancer percentile (not an average across cancers).  
+4. **Empirical percentile** — Your PRS is ranked within an **ancestry-stratified reference panel** (1000 Genomes–style EUR/AFR/EAS), not a theoretical Gaussian from allele frequencies.  
+5. **Calibrated absolute risk** — P = 1 − (1 − R_base)^(RR_PRS × RR_clinical) (Chatterjee et al., 2016; Lewis et al., 2021).  
+6. **Executive index** — Overall summary uses your **highest** single-cancer percentile (not an average across cancers).  
 
-Details: [docs/RISK_MODELS.md](docs/RISK_MODELS.md)
+Details: [docs/RISK_MODELS.md](docs/RISK_MODELS.md) · Reference pipeline: [scripts/reference_panel/README.md](scripts/reference_panel/README.md)
 
 | Cancer | Research score (PGS Catalog) |
 |--------|------------------------------|

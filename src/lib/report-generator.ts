@@ -42,7 +42,9 @@ function plainLanguageSummary(prs: PrsComputationResult, popPct: number): string
 function limitationsFor(prs: PrsComputationResult): string[] {
   const limits = [
     "Personal polygenic score from your DNA — common variants only, not BRCA/Lynch unless flagged in pathogenic screen.",
-    "Reference populations are primarily European-ancestry; accuracy may differ.",
+    prs.calibrationMethod === "legacy_hwe"
+      ? "Warning: empirical reference panel missing — using legacy HWE fallback."
+      : `Percentile empirically ranked within ${prs.referencePopulation ?? "reference"} panel (${prs.calibrationMethod}).`,
     "Educational only — not medical guidance or a diagnosis.",
   ];
   const matchWarning = validateMatchRateResult(prs);
@@ -93,6 +95,8 @@ export function runAnalysis(
     variantCount: number;
     sex?: "female" | "male";
     age?: number;
+    ancestry?: UserProfile["ancestry"];
+    ancestryConfidence?: number;
     familyHistory?: FamilyHistoryInput;
     mode?: "dna" | "demo" | "shared";
   },
@@ -104,7 +108,11 @@ export function runAnalysis(
 
   if (!pathogenicScreen.blocksPrsInterpretation) {
     for (const definition of scores) {
-      const prs = computePrsForScore(definition, genotypes);
+      const prs = computePrsForScore(definition, genotypes, {
+        ancestry: options.ancestry,
+        ancestryConfidence:
+          options.ancestryConfidence ?? (options.ancestry ? 0.85 : 0.5),
+      });
       reports.push(
         buildCancerReport(prs, {
           ...options,
@@ -112,6 +120,7 @@ export function runAnalysis(
             sex: options.sex,
             age: options.age,
             familyHistory: options.familyHistory,
+            ancestry: options.ancestry,
           },
         }),
       );
