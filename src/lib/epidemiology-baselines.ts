@@ -14,6 +14,8 @@ export interface CancerBaseline {
   /** Approximate U.S. lifetime risk (SEER-informed order of magnitude) */
   lifetimeRiskFemale: number;
   lifetimeRiskMale: number;
+  /** Hazard ratio per 1 SD of PRS (Lewis et al., 2021; cancer-specific GWAS) */
+  hazardRatioPerSd: number;
   sdPRS: number;
   ancestryMultipliers: Record<AncestryGroup, number>;
   source: string;
@@ -26,6 +28,7 @@ export const CANCER_BASELINES: CancerBaseline[] = [
     label: "Breast cancer",
     lifetimeRiskFemale: 0.13,
     lifetimeRiskMale: 0.001,
+    hazardRatioPerSd: 1.8,
     sdPRS: 1,
     ancestryMultipliers: {
       european: 1,
@@ -42,6 +45,7 @@ export const CANCER_BASELINES: CancerBaseline[] = [
     label: "Colorectal cancer",
     lifetimeRiskFemale: 0.04,
     lifetimeRiskMale: 0.042,
+    hazardRatioPerSd: 1.45,
     sdPRS: 1,
     ancestryMultipliers: {
       european: 1,
@@ -58,6 +62,7 @@ export const CANCER_BASELINES: CancerBaseline[] = [
     label: "Prostate cancer",
     lifetimeRiskFemale: 0,
     lifetimeRiskMale: 0.125,
+    hazardRatioPerSd: 1.5,
     sdPRS: 1,
     ancestryMultipliers: {
       european: 1,
@@ -74,6 +79,7 @@ export const CANCER_BASELINES: CancerBaseline[] = [
     label: "Ovarian cancer",
     lifetimeRiskFemale: 0.012,
     lifetimeRiskMale: 0,
+    hazardRatioPerSd: 1.35,
     sdPRS: 1,
     ancestryMultipliers: {
       european: 1,

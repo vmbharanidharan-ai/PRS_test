@@ -1,44 +1,33 @@
-# PRS Screen
+# GeneScope
 
-Patient-facing **polygenic risk re-interpretation** for cancer screening decisions. Upload a raw **23andMe** or **AncestryDNA** genotype file; the app computes updated **polygenic risk scores (PRS)** for breast, colorectal, prostate, and ovarian cancer using **PGS Catalog** weights, compares to a reference distribution, and produces a **plain-language report** with **NCCN / USPSTF–informed** screening notes.
+**Understand inherited cancer risk — in plain language.**
 
-> **Regulatory framing:** Educational/informational only — not a medical device, not a diagnosis. Users must discuss results with a clinician. See [Terms](/terms) and [Privacy](/privacy) templates (require legal review before launch).
+GeneScope helps you explore educational insights about breast, colorectal, prostate, and ovarian cancer risk. You can try a quick demo, upload a consumer DNA file, or answer a short profile questionnaire — no account required for local use.
 
-## Architecture
+> **Important:** GeneScope is for **learning and discussion with your doctor** — not a diagnosis, not medical advice, and not a substitute for genetic testing (e.g. BRCA or Lynch). Review [Terms](/terms) and [Privacy](/privacy) with a lawyer before any public launch.
 
-```
-Raw genotype file (.txt / .zip)
-        ↓
-  Browser-only pipeline (no DNA uploaded)
-        ├── genotype-parser.ts   ← 23andMe / Ancestry format
-        ├── prs-calculator.ts    ← weighted sum + z-score / percentile
-        └── report-generator.ts  ← guidelines + plain language
-        ↓
-  Interactive report UI + optional family history + PDF export
-```
+---
 
-**Features:** on-device analysis · optional family-history questionnaire · PDF download · Capacitor iOS/Android — see [docs/MOBILE.md](docs/MOBILE.md).
+## What you can do
 
-| Cancer       | PGS Catalog ID | Variants | Source (via PGS Catalog)        |
-|-------------|----------------|----------|----------------------------------|
-| Breast      | PGS005104      | 89       | Jia et al., Nat Genet 2024       |
-| Colorectal  | PGS004240      | 89       | Fan et al., Int J Cancer 2023    |
-| Prostate    | PGS000662      | 269      | Conti et al., Nat Genet 2021     |
-| Ovarian     | PGS000048      | 17       | PGS Catalog / GWAS literature    |
+| Option | What happens | Best for |
+|--------|----------------|----------|
+| **Instant demo** | See a full sample report in a few seconds | Exploring the app |
+| **Upload DNA** | Your file is analyzed **in your browser** — raw DNA is not sent to our servers in local mode | Highest precision (23andMe or AncestryDNA raw export) |
+| **Build my profile** | Estimates based on age, sex, ancestry, and family history — **not** your actual DNA | Trying the experience without a DNA file |
 
-Population mean/SD are approximated from effect-allele frequencies in each scoring file (Hardy–Weinberg). For production, calibrate against a reference panel (e.g. 1000 Genomes or UK Biobank summary statistics).
+After any path, you get:
 
-## Quick start (you do this locally)
+- An easy-to-read **overview** and per-cancer cards  
+- **Screening notes** informed by NCCN / USPSTF / ACS guidelines (for discussion with a clinician)  
+- Optional **family history** questions for extra context  
+- **PDF download** and a **share link** (summary only — never raw genotypes)
 
-### 1. Install Node.js 20+
+---
 
-```bash
-# macOS (Homebrew)
-brew install node
-node -v   # should be v20+
-```
+## Try it locally (about 2 minutes)
 
-### 2. Install dependencies & run
+**You need:** [Node.js 20+](https://nodejs.org/) (check with `node -v`)
 
 ```bash
 cd ~/Projects/app-test
@@ -46,125 +35,64 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open **http://localhost:3000** in your browser.
 
-### 3. Refresh GWAS weights (optional, quarterly)
+**No real DNA?** On the home screen, tap **Instant demo**, or upload the included test file:
 
-When new PGS scores are published:
-
-```bash
-npm run prepare-data
-# or separately:
-python3 scripts/fetch_pgs_weights.py
-python3 scripts/build_bundled_weights.py
-```
-
-Commit updated `src/data/prs/*.json` after validating scores in [PGS Catalog](https://www.pgscatalog.org/).
-
-### 4. Test without real DNA
-
-**Synthetic full genome (recommended):**
-
-```bash
-# Already in repo after clone:
-#   fixtures/synthetic-23andme-raw.zip   (~620k SNPs, ~6.5 MB)
-# Or regenerate:
-npm run generate-test-data
-```
-
-Upload `fixtures/synthetic-23andme-raw.zip` in the app, or download from the UI link (“Download synthetic test genome”). See [fixtures/README.md](fixtures/README.md).
-
-This is **fake data** (not a real person), but matches 23andMe format and includes all SNPs needed for PRS scoring.
+`fixtures/synthetic-23andme-raw.zip` (~620k fake SNPs, not a real person)
 
 ---
 
-## What you must do manually (checklist)
+## How your results are calculated
 
-### Engineering
+### When you upload DNA (or use the demo)
 
-| Task | Why |
-|------|-----|
-| **Install Node 20+** and run `npm install` | Environment did not include npm in CI/agent |
-| **Run `npm run dev`** and test with your own raw file | End-to-end validation |
-| **Deploy** (Vercel, Netlify, or static export) | See [Deploy](#deploy) |
-| **Set up error monitoring** (Sentry, etc.) | Optional; do not log genotype content |
-| **Run Capacitor setup** (`npm run cap:sync`, Xcode/Android Studio) | See [docs/MOBILE.md](docs/MOBILE.md) |
+1. **Pathogenic screen first** — Targeted check for known high-risk BRCA founder and Lynch proxy positions on consumer chips. If positive, PRS is withheld and you see an urgent clinical alert.  
+2. **Read your file** — Supports 23andMe and AncestryDNA raw `.txt` or `.zip` exports.  
+3. **Score each cancer** — PGS Catalog weights, vectorized in-browser.  
+4. **Calibrated absolute risk** — Joint model: P = 1 − (1 − R_base)^(RR_PRS × RR_clinical) (Chatterjee et al., 2016; Lewis et al., 2021).  
+5. **Executive index** — Overall summary uses your **highest** single-cancer percentile (not an average across cancers).  
 
-### Scientific / clinical
+Details: [docs/RISK_MODELS.md](docs/RISK_MODELS.md)
 
-| Task | Why |
-|------|-----|
-| **Review PGS IDs** in `scripts/fetch_pgs_weights.py` | Swap to newer scores when literature moves |
-| **Calibrate percentiles** on a reference cohort | HWE approximation is a MVP; clinical use needs empirical mean/SD |
-| **Oncologist / genetic counselor review** of guideline mapping in `src/lib/guidelines.ts` | Reduce liability; align wording with NCCN/USPSTF |
-| **Ancestry-specific scores** | Current weights are European-centric; add trans-ancestry PRS or disclaimers |
-| **Family history intake** | PRS is not a substitute for BRCA/Lynch testing — add a short questionnaire |
+| Cancer | Research score (PGS Catalog) |
+|--------|------------------------------|
+| Breast | PGS005104 |
+| Colorectal | PGS004240 |
+| Prostate | PGS000662 |
+| Ovarian | PGS000048 |
 
-### Legal / regulatory (critical before charging users)
+**What this does *not* include:** BRCA1/2, Lynch syndrome, or other rare high-risk mutations — only common variants from PRS models.
 
-| Task | Why |
-|------|-----|
-| **Retain healthcare attorney** | “Educational” framing still has FDA/state risk |
-| **Finalize Terms, Privacy, and disclaimer** | Templates in `src/app/terms`, `src/app/privacy`, `DisclaimerBanner` |
-| **No “diagnosis” or “risk prediction” marketing** | Use “informational,” “for discussion with physician” |
-| **State laboratory / CLIA** | Not applicable if you never receive samples; **confirm** for your model |
-| **HIPAA** | Browser-only processing avoids PHI storage; changes if you add accounts/cloud |
-| **FDA General Wellness / LDT** | Get written legal opinion on classification |
+### When you use “Build my profile” (no DNA)
 
-### Business / App Store
+- **Breast:** simplified Gail (BCRAT) or Tyrer-Cuzick (IBIS) when family history is strong  
+- **Colorectal:** PREMM5-inspired Lynch probability model  
+- **Other cancers:** SEER baseline + clinical relative risk  
 
-| Task | Why |
-|------|-----|
-| **Apple Developer + Google Play accounts** | ~$99/yr + $25 one-time |
-| **Privacy nutrition labels** | Declare “genetic data processed on device” if true |
-| **Subscription billing** (Stripe / RevenueCat) | If using one-time report or subscription model |
-| **Clinical advisory board** | Credibility for DTC marketing |
+Still **not from your DNA** — upload a genotype file for polygenic calibration.
+
+### Optional: save history (developers)
+
+A **FastAPI + Postgres** backend supports accounts, consent, and private risk history. See [backend/README.md](backend/README.md) and [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md). Default web use stays **local-only** unless you enable account mode and set `NEXT_PUBLIC_API_URL`.
 
 ---
 
-## Deploy
+## Privacy at a glance
 
-**Vercel (recommended):**
-
-```bash
-npm install -g vercel   # or npx vercel
-vercel
-```
-
-Ensure environment has no server-side DNA logging. Default build is static client-side analysis.
-
-**Docker (optional):** add a `Dockerfile` with `node:20-alpine`, `npm run build`, `npm start`.
+| Mode | Your DNA | Stored data |
+|------|----------|-------------|
+| **Local-only** (default) | Stays in your browser | Nothing on our servers |
+| **Account** | Still processed client-side; optional sync of **summary** results | Phenotype + risk history (with consent) |
+| **Research** | Separate opt-in | Anonymized aggregates only — no user ID |
 
 ---
 
-## Mobile app (Capacitor)
+## Optional features
 
-Native iOS/Android is configured in this repo:
+### AI explainer
 
-```bash
-npm install
-npm run build:mobile
-npx cap add ios && npx cap add android   # first time only
-npm run cap:sync
-npm run cap:ios    # or cap:android
-```
-
-Full steps: **[docs/MOBILE.md](docs/MOBILE.md)**.
-
-## PDF export
-
-After analysis, use **Download PDF** on the report screen. Generated client-side via `jspdf` (no server).
-
-## AI explainer (optional, informational only)
-
-After your report, expand **Understand your results** for a plain-language explanation of what PRS percentiles mean.
-
-| Property | Detail |
-|----------|--------|
-| **Purpose** | Education only — not diagnosis, not “what you should do” |
-| **Data sent** | Summary stats only (percentiles, tiers) — **never raw DNA** |
-| **Recommendations** | Blocked in system prompt + output filter |
-| **Requires** | Server with `OPENAI_API_KEY` (`npm run dev` or Vercel) |
+After a report, **Understand your results** can call OpenAI with **summary stats only** (percentiles, tiers — never raw DNA). Requires:
 
 ```bash
 cp .env.example .env.local
@@ -172,51 +100,98 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Not available in `build:mobile` / Capacitor static export (no API routes). The main report still works offline.
+Not available in the offline mobile build.
 
-## Family history (optional)
+### Mobile app (iOS / Android)
 
-Users can expand **Family history (optional)** on the upload form. If skipped, the report uses PRS + sex/age only. If completed, extra NCCN-oriented notes are appended per cancer type (does not replace genetic testing for BRCA/Lynch).
-
----
-
-## Project layout
-
-```
-scripts/
-  fetch_pgs_weights.py      # Download from PGS Catalog FTP
-  build_bundled_weights.py    # → src/data/prs/*.json
-src/lib/
-  genotype-parser.ts          # 23andMe / Ancestry parsing
-  prs-calculator.ts           # Dosage × weight, z-score, percentile
-  report-generator.ts         # Full analysis + reports
-  guidelines.ts               # NCCN / USPSTF screening text
-  prs-registry.ts             # Loads bundled JSON weights
-src/data/prs/                 # Bundled PGS weights (committed)
-src/components/               # Upload + report UI
+```bash
+npm run build:mobile
+npx cap sync
+npm run cap:ios    # or cap:android
 ```
 
+Details: [docs/MOBILE.md](docs/MOBILE.md)
+
+### Backend API (optional)
+
+```bash
+docker compose up -d postgres
+cd backend && pip install -r requirements.txt
+cp .env.example .env
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
+```
+
+Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env.local` for the web app.
+
 ---
 
-## Updating scores
+## For developers
 
-1. Find new PGS IDs on [pgscatalog.org](https://www.pgscatalog.org).
-2. Edit `PGS_IDS` in `scripts/fetch_pgs_weights.py` and `CANCER_MAP` in `build_bundled_weights.py`.
-3. Run `npm run prepare-data`.
-4. Test match rates on real 23andMe files (target **>80%** variant match per cancer).
+### Project layout
+
+```
+src/
+  app/              # Pages (home, terms, privacy)
+  components/       # UI (home funnel, results, consent)
+  lib/              # Parsing, PRS math, reports, guidelines
+  data/prs/         # Bundled PGS weights (JSON)
+scripts/            # Fetch/build weights, test data generator
+backend/            # FastAPI API (optional)
+fixtures/           # Synthetic 23andMe zip for testing
+```
+
+### Refresh PGS weights
+
+When catalog scores are updated:
+
+```bash
+npm run prepare-data
+```
+
+Or step by step: `python3 scripts/fetch_pgs_weights.py` then `python3 scripts/build_bundled_weights.py`. Commit updated `src/data/prs/*.json` after checking [PGS Catalog](https://www.pgscatalog.org).
+
+### Deploy (web)
+
+```bash
+npx vercel
+```
+
+Use static/client-side analysis; do not log genotype content. Optional monitoring (e.g. Sentry) should exclude DNA payloads.
 
 ---
 
-## Limitations (disclose to users)
+## Before you ship to real users
 
-- PRS captures **common variants only** — not BRCA1/2, Lynch, or other monogenic risk.
-- Percentiles use **approximate** population parameters, not your personal cohort.
-- **Non-European ancestry** may have reduced accuracy.
-- Screening text is **general** — not a substitute for personalized medical care.
+**Clinical & science**
+
+- Have a genetic counselor or oncologist review screening text in `src/lib/guidelines.ts`  
+- Calibrate percentiles on a proper reference cohort (current model uses Hardy–Weinberg approximations)  
+- Be explicit about reduced accuracy outside European-ancestry reference populations  
+
+**Legal**
+
+- Finalize Terms, Privacy, and disclaimers with healthcare counsel  
+- Avoid “diagnosis” or “prediction” marketing — use “educational” and “discuss with your clinician”  
+- Re-evaluate HIPAA/FDA/state rules if you add cloud storage or charge for reports  
+
+**Product**
+
+- App Store accounts and privacy labels if shipping mobile  
+- Error monitoring without logging genetic data  
+
+---
+
+## Known limitations
+
+- **Common variants only** — not BRCA, Lynch, or other pathogenic tests  
+- **Percentiles are approximate** — not calibrated to your personal ancestry cohort  
+- **European-centric PRS** — accuracy may differ for other ancestries  
+- **Screening text is general** — not personalized medical care  
 
 ---
 
 ## License
 
-Code: MIT (add `LICENSE` file before public release).  
-PGS weights: follow [PGS Catalog terms](https://www.pgscatalog.org/downloads/) per score.
+Application code: MIT (add a `LICENSE` file before public release).  
+PGS weights: follow [PGS Catalog download terms](https://www.pgscatalog.org/downloads/) for each score.

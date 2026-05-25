@@ -53,6 +53,14 @@ export function OverallRiskBar({
         </div>
       </div>
 
+      {overall.executiveIndexPercentile > 0 && (
+        <p className="mt-3 text-xs text-slate-500">
+          Executive index: {overall.executiveIndexPercentile}th percentile
+          {overall.drivingCancer
+            ? ` (driven by ${overall.drivingCancer})`
+            : ""}
+        </p>
+      )}
       <p className="mt-4 text-sm leading-relaxed text-slate-700">
         {overall.summary}
       </p>

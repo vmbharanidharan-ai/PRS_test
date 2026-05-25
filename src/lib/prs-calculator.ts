@@ -1,10 +1,17 @@
 import type {
   PrsComputationResult,
   PrsScoreDefinition,
-  RiskTier,
-  SnpContribution,
   UserGenotype,
 } from "./types";
+import { baselineFor } from "./epidemiology-baselines";
+import {
+  percentileToRiskTier,
+  validateMatchRate,
+  zScoreToPercentile,
+} from "./prs-calculator-utils";
+import { computePrsForScoreVectorized } from "./prs-vector";
+
+export { zScoreToPercentile, percentileToRiskTier, validateMatchRate };
 
 function complement(allele: string): string {
   const map: Record<string, string> = {
@@ -37,7 +44,6 @@ function dosageOfEffectAllele(
 
   if (countEffect + countOther === 2) return countEffect;
 
-  // Strand flip: try complement alleles
   const ce1 = complement(e1);
   const ce2 = complement(e2);
   const countEffectFlip = alleles.filter((a) => a === ce1).length;
@@ -47,94 +53,18 @@ function dosageOfEffectAllele(
   return null;
 }
 
+/** Legacy loop scorer — delegates to vectorized path for performance */
 export function computePrsForScore(
   definition: PrsScoreDefinition,
   genotypes: Map<string, UserGenotype>,
 ): PrsComputationResult {
-  let rawScore = 0;
-  let variantsUsed = 0;
-  const contributions: SnpContribution[] = [];
-
-  for (const variant of definition.variants) {
-    const user = genotypes.get(variant.rsid.toLowerCase());
-    if (!user) continue;
-
-    const dosage = dosageOfEffectAllele(
-      user.genotype,
-      variant.effectAllele,
-      variant.otherAllele,
-    );
-    if (dosage === null) continue;
-
-    const contribution = dosage * variant.weight;
-    rawScore += contribution;
-    variantsUsed++;
-    contributions.push({
-      rsid: variant.rsid,
-      effectAllele: variant.effectAllele,
-      userGenotype: user.genotype,
-      dosage,
-      weight: variant.weight,
-      contribution,
-    });
-  }
-
-  contributions.sort(
-    (a, b) => Math.abs(b.contribution) - Math.abs(a.contribution),
-  );
-  const topContributors = contributions.slice(0, 10);
-
-  const variantsTotal = definition.variants.length;
-  const matchRate = variantsTotal > 0 ? variantsUsed / variantsTotal : 0;
-
-  const { mean, sd } = definition.population;
-  const zScore = sd > 0 ? (rawScore - mean) / sd : 0;
-  const percentile = zScoreToPercentile(zScore);
-  const riskTier = percentileToRiskTier(percentile);
-
-  return {
-    pgsId: definition.pgsId,
-    cancerType: definition.cancerType,
-    name: definition.name,
-    rawScore,
-    zScore,
-    percentile,
-    riskTier,
-    variantsUsed,
-    variantsTotal,
-    matchRate,
-    relativeRiskPerSd: 1.3,
-    citation: definition.citation,
-    topContributors,
-  };
+  const hr = baselineFor(definition.cancerType).hazardRatioPerSd;
+  return computePrsForScoreVectorized(definition, genotypes, hr);
 }
 
-/** Standard normal CDF approximation */
-function zScoreToPercentile(z: number): number {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z));
-  const d = 0.3989423 * Math.exp((-z * z) / 2);
-  const p =
-    d *
-    t *
-    (0.3193815 +
-      t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  const cdf = z >= 0 ? 1 - p : p;
-  return Math.round(cdf * 1000) / 10;
-}
-
-function percentileToRiskTier(percentile: number): RiskTier {
-  if (percentile < 20) return "low";
-  if (percentile < 80) return "average";
-  if (percentile < 95) return "moderate";
-  return "high";
-}
-
-export function validateMatchRate(
+export function validateMatchRateResult(
   result: PrsComputationResult,
   minRate = 0.5,
 ): string | null {
-  if (result.matchRate < minRate) {
-    return `Only ${Math.round(result.matchRate * 100)}% of PRS variants were found in your file. Results may be unreliable. Consider re-downloading your raw data.`;
-  }
-  return null;
+  return validateMatchRate(result.matchRate, minRate);
 }

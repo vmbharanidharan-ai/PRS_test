@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import consent, genetic, phenotype, risk, users
+from app.routers import consent, genetic, phenotype, risk, scoring, users
 
 app = FastAPI(
     title="GeneScope API",
@@ -24,6 +24,7 @@ app.include_router(consent.router)
 app.include_router(phenotype.router)
 app.include_router(genetic.router)
 app.include_router(risk.router)
+app.include_router(scoring.router)
 
 
 @app.get("/health")

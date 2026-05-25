@@ -17,8 +17,9 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
 
       {report.precision === "population" && (
         <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
-          Population-based estimate — not from your DNA. Percentile range:{" "}
-          {population.percentileLow}th–{population.percentileHigh}th.
+          {population.clinicalModel
+            ? `${population.clinicalModel} — not from your DNA.`
+            : `Population-based estimate — not from your DNA. Percentile range: ${population.percentileLow}th–${population.percentileHigh}th.`}
         </p>
       )}
 
@@ -58,7 +59,15 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
               {Math.round(prs.matchRate * 100)}% match
             </p>
           )}
-          <p>Lifetime risk (epidemiological scale): ~{population.lifetimeRiskPercent}%</p>
+          <p>
+            Calibrated lifetime risk: ~{population.lifetimeRiskPercent}%
+            {population.absoluteRisk && (
+              <span className="block text-xs text-slate-500 mt-1">
+                RR total {population.absoluteRisk.rrTotal.toFixed(2)} (
+                {population.absoluteRisk.method})
+              </span>
+            )}
+          </p>
         </div>
       </details>
 

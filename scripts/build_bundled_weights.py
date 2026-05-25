@@ -121,17 +121,34 @@ def parse_scoring_file(path: Path) -> tuple[dict, list[dict]]:
     return meta, variants
 
 
-def population_stats(variants: list[dict]) -> tuple[float, float]:
+def _fetch_maf(rsid: str) -> float | None:
+    try:
+        from fetch_variant_maf import fetch_maf_ensembl
+    except ImportError:
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from fetch_variant_maf import fetch_maf_ensembl
+    return fetch_maf_ensembl(rsid)
+
+
+def population_stats(variants: list[dict], fetch_missing: bool = True) -> tuple[float, float]:
     """HWE-based mean and SD of PRS across reference population."""
     mean = 0.0
     var = 0.0
+    skipped = 0
     for v in variants:
         p = v.get("_freq")
         if p is None or p <= 0 or p >= 1:
-            p = 0.3  # conservative default when frequency missing
+            if fetch_missing:
+                p = _fetch_maf(v["rsid"])
+            if p is None or p <= 0 or p >= 1:
+                skipped += 1
+                continue
         beta = v["weight"]
         mean += 2 * p * beta
         var += 2 * p * (1 - p) * (beta ** 2)
+    if skipped:
+        print(f"  (skipped {skipped} variants without MAF — no 0.3 fallback)")
     sd = math.sqrt(var) if var > 0 else 1.0
     return mean, sd
 

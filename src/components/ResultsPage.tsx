@@ -10,6 +10,7 @@ import { MethodologySection } from "./report/MethodologySection";
 import { ShareReportButton } from "./report/ShareReportButton";
 import { AncestryConfidenceMeter } from "./report/AncestryConfidenceMeter";
 import { ScreeningTimeline } from "./report/ScreeningTimeline";
+import { PathogenicAlert } from "./report/PathogenicAlert";
 
 interface ResultsPageProps {
   result: AnalysisResult;
@@ -62,12 +63,18 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
         </div>
       </div>
 
+      {result.pathogenicScreen && (
+        <PathogenicAlert screen={result.pathogenicScreen} />
+      )}
+
       {result.populationDisclaimer && (
         <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
           <strong>Important:</strong> {result.populationDisclaimer}
         </div>
       )}
 
+      {result.reports.length > 0 && (
+        <>
       <OverallRiskBar
         overall={result.overallRisk}
         precisionLevel={result.precisionLevel}
@@ -127,9 +134,11 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
         )}
       </section>
 
-      <MethodologySection precisionLevel={result.precisionLevel} />
-
       <ReportInterpreter result={result} />
+        </>
+      )}
+
+      <MethodologySection precisionLevel={result.precisionLevel} />
 
       <footer className="text-xs text-slate-500">{result.globalDisclaimer}</footer>
     </div>

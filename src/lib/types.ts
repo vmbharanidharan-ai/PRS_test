@@ -27,6 +27,17 @@ export interface UserProfile {
   familyHistory?: FamilyHistoryInput;
 }
 
+export interface AbsoluteRiskBreakdown {
+  cancerType?: CancerType;
+  baselineLifetimeRisk: number;
+  rrPrs: number;
+  rrClinical: number;
+  rrTotal: number;
+  absoluteLifetimeRisk: number;
+  absoluteLifetimeRiskPercent: number;
+  method: string;
+}
+
 export interface PopulationCancerRisk {
   cancerType: CancerType;
   label: string;
@@ -39,6 +50,23 @@ export interface PopulationCancerRisk {
   confidenceLevel: "low" | "moderate" | "high";
   isPopulationEstimate: boolean;
   whatWouldShift: string[];
+  absoluteRisk?: AbsoluteRiskBreakdown;
+  clinicalModel?: string;
+}
+
+export interface PathogenicFinding {
+  rsid: string;
+  gene: string;
+  variantLabel: string;
+  userGenotype: string;
+  significance: "pathogenic_founder" | "clinvar_pathogenic";
+  recommendation: string;
+}
+
+export interface PathogenicScreenResult {
+  findings: PathogenicFinding[];
+  blocksPrsInterpretation: boolean;
+  screenedLoci: number;
 }
 
 export interface OverallRiskSummary {
@@ -47,6 +75,9 @@ export interface OverallRiskSummary {
   /** 0–100 visual bar position */
   barPercent: number;
   summary: string;
+  /** Executive index: driven by highest single-cancer liability */
+  executiveIndexPercentile: number;
+  drivingCancer?: CancerType;
 }
 
 export interface PrsVariant {
@@ -175,6 +206,7 @@ export interface AnalysisResult {
   populationDisclaimer?: string;
   familyHistory?: FamilyHistoryInput;
   familyHistorySummary?: string[];
+  pathogenicScreen?: PathogenicScreenResult;
 }
 
 export interface UserGenotype {

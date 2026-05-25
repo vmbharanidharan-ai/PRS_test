@@ -14,18 +14,17 @@ export function MethodologySection({
       <div className="mt-4 space-y-3 text-sm text-slate-600">
         {precisionLevel === "population" && (
           <p>
-            <strong>Profile mode:</strong> Uses SEER/CDC-scale lifetime risk
-            baselines, demographic conditioning (age, sex, ancestry), and
-            family-history multipliers. Polygenic risk is modeled as a normal
-            distribution — you receive a percentile <em>range</em>, not a personal
-            score.
+            <strong>Profile mode:</strong> Breast — simplified Gail or Tyrer-Cuzick
+            (IBIS); colorectal — PREMM5-inspired Lynch probability. Absolute risk:
+            P = 1 − (1 − R<sub>base</sub>)<sup>RR</sup> with SEER baselines.
           </p>
         )}
         {(precisionLevel === "genetic" || precisionLevel === "demo") && (
           <p>
-            <strong>DNA mode:</strong> Computes polygenic scores from PGS
-            Catalog published weights (thousands of common variants). Compared to
-            European-reference population mean and standard deviation.
+            <strong>DNA mode:</strong> PGS Catalog weights, vectorized scoring,
+            Z-score → RR<sub>PRS</sub> = exp(Z·ln(HR/SD)), joint model with clinical
+            RR. Executive index = max percentile across cancers (not averaged).
+            Pathogenic founder screen runs before PRS.
           </p>
         )}
         <p>
