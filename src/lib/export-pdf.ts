@@ -52,12 +52,11 @@ export async function downloadReportPdf(result: AnalysisResult): Promise<void> {
   for (const report of result.reports) {
     addPageIfNeeded(20);
     writeLine(report.label, { size: 13, bold: true });
-    writeLine(
-      `Percentile: ${report.prs.percentile.toFixed(0)}% · Z-score: ${report.prs.zScore >= 0 ? "+" : ""}${report.prs.zScore.toFixed(2)} · Match: ${Math.round(report.prs.matchRate * 100)}% · ${report.prs.riskTier}`,
-      { size: 9 },
-    );
+    writeLine(report.riskStory.headline, { size: 11, bold: true });
     writeGap(2);
-    writeLine(report.plainLanguageSummary, { size: 9 });
+    writeLine(report.riskStory.lifetimeFraming, { size: 9 });
+    writeLine(report.riskStory.populationComparison, { size: 9 });
+    writeLine(report.riskStory.plainMeaning, { size: 9 });
     writeLine(`Score: ${report.prs.pgsId} — ${report.prs.citation}`, { size: 8 });
     writeGap(2);
     writeLine("Screening considerations", { size: 10, bold: true });

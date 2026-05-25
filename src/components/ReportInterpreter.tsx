@@ -16,6 +16,13 @@ export function ReportInterpreter({ result }: ReportInterpreterProps) {
   const [filtered, setFiltered] = useState(false);
   const [question, setQuestion] = useState("");
 
+  const suggestedQuestions = [
+    "What does my percentile mean?",
+    "How is this different from 23andMe?",
+    "Why might ancestry affect my score?",
+    "What can't a PRS tell me?",
+  ];
+
   const fetchExplanation = async (followUp?: string) => {
     setLoading(true);
     setError(null);
@@ -61,12 +68,12 @@ export function ReportInterpreter({ result }: ReportInterpreterProps) {
       >
         <div>
           <h3 className="text-lg font-semibold text-slate-900">
-            Understand your results{" "}
-            <span className="font-normal text-slate-500">(optional AI explainer)</span>
+            Ask about your results{" "}
+            <span className="font-normal text-slate-500">(optional)</span>
           </h3>
           <p className="mt-1 text-sm text-slate-600">
-            Educational interpretation only — not medical advice and no screening
-            recommendations.
+            Conversational, educational only — grounded in your computed insights,
+            not medical advice.
           </p>
         </div>
         <span className="shrink-0 text-sm text-brand-600">
@@ -108,8 +115,24 @@ export function ReportInterpreter({ result }: ReportInterpreterProps) {
               onClick={() => fetchExplanation()}
               className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Generating explanation…" : "Explain my PRS results"}
+              {loading ? "Thinking…" : "Start conversation"}
             </button>
+          )}
+
+          {!explanation && acknowledged && (
+            <div className="flex flex-wrap gap-2">
+              {suggestedQuestions.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => fetchExplanation(q)}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-700 hover:border-brand-300"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           )}
 
           {error && (
@@ -147,10 +170,26 @@ export function ReportInterpreter({ result }: ReportInterpreterProps) {
                 guidance. Discuss with your healthcare provider.
               </p>
 
+              <div className="flex flex-wrap gap-2">
+                {suggestedQuestions.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      setQuestion(q);
+                      fetchExplanation(q);
+                    }}
+                    className="rounded-full border border-slate-200 px-3 py-1 text-xs hover:bg-slate-50"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <input
                   type="text"
-                  placeholder="Ask a clarifying question (e.g. What is a percentile?)"
+                  placeholder="Or type your own question…"
                   className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}

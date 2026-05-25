@@ -1,8 +1,8 @@
 import type {
   PrsComputationResult,
   PrsScoreDefinition,
-  PrsVariant,
   RiskTier,
+  SnpContribution,
   UserGenotype,
 } from "./types";
 
@@ -53,6 +53,7 @@ export function computePrsForScore(
 ): PrsComputationResult {
   let rawScore = 0;
   let variantsUsed = 0;
+  const contributions: SnpContribution[] = [];
 
   for (const variant of definition.variants) {
     const user = genotypes.get(variant.rsid.toLowerCase());
@@ -65,9 +66,23 @@ export function computePrsForScore(
     );
     if (dosage === null) continue;
 
-    rawScore += dosage * variant.weight;
+    const contribution = dosage * variant.weight;
+    rawScore += contribution;
     variantsUsed++;
+    contributions.push({
+      rsid: variant.rsid,
+      effectAllele: variant.effectAllele,
+      userGenotype: user.genotype,
+      dosage,
+      weight: variant.weight,
+      contribution,
+    });
   }
+
+  contributions.sort(
+    (a, b) => Math.abs(b.contribution) - Math.abs(a.contribution),
+  );
+  const topContributors = contributions.slice(0, 10);
 
   const variantsTotal = definition.variants.length;
   const matchRate = variantsTotal > 0 ? variantsUsed / variantsTotal : 0;
@@ -90,6 +105,7 @@ export function computePrsForScore(
     matchRate,
     relativeRiskPerSd: 1.3,
     citation: definition.citation,
+    topContributors,
   };
 }
 

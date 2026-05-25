@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "./types";
+import type { AnalysisResult, RiskStory } from "./types";
 
 /**
  * Redacted summary sent to the LLM — computed scores only, no raw DNA,
@@ -11,13 +11,10 @@ export interface InterpretPayload {
   familyHistorySummary?: string[];
   cancers: {
     label: string;
-    percentile: number;
-    zScore: number;
     riskTier: string;
-    matchRatePercent: number;
-    pgsId: string;
-    scoreName: string;
-    plainLanguageSummary: string;
+    riskStory: RiskStory;
+    ancestryConfidence: { level: string; applicabilityPercent: number };
+    topContributorCount: number;
     limitations: string[];
   }[];
 }
@@ -30,13 +27,13 @@ export function buildInterpretPayload(result: AnalysisResult): InterpretPayload 
     familyHistorySummary: result.familyHistorySummary,
     cancers: result.reports.map((r) => ({
       label: r.label,
-      percentile: r.prs.percentile,
-      zScore: r.prs.zScore,
       riskTier: r.prs.riskTier,
-      matchRatePercent: Math.round(r.prs.matchRate * 100),
-      pgsId: r.prs.pgsId,
-      scoreName: r.prs.name,
-      plainLanguageSummary: r.plainLanguageSummary,
+      riskStory: r.riskStory,
+      ancestryConfidence: {
+        level: r.ancestryConfidence.level,
+        applicabilityPercent: r.ancestryConfidence.applicabilityPercent,
+      },
+      topContributorCount: r.prs.topContributors.length,
       limitations: r.limitations,
     })),
   };

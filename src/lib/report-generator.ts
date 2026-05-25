@@ -5,8 +5,11 @@ import type {
   GenotypeVendor,
   PrsComputationResult,
 } from "./types";
+import { buildAncestryConfidence } from "./ancestry-confidence";
 import { getFamilyHistorySupplements, summarizeFamilyHistory } from "./family-history";
 import { GLOBAL_DISCLAIMER, getScreeningRecommendations } from "./guidelines";
+import { buildRiskStory } from "./risk-story";
+import { buildScreeningTimeline } from "./screening-timeline";
 import type { FamilyHistoryInput } from "./types";
 import { computePrsForScore, validateMatchRate } from "./prs-calculator";
 import { getActivePrsScores } from "./prs-registry";
@@ -62,6 +65,9 @@ function buildCancerReport(
     label: CANCER_LABELS[prs.cancerType],
     prs,
     plainLanguageSummary: plainLanguageSummary(prs),
+    riskStory: buildRiskStory(CANCER_LABELS[prs.cancerType], prs),
+    timeline: buildScreeningTimeline(prs.cancerType, prs, options),
+    ancestryConfidence: buildAncestryConfidence(prs),
     screening: [...base, ...fhExtra],
     limitations: limitationsFor(prs),
   };
@@ -75,6 +81,7 @@ export function runAnalysis(
     sex?: "female" | "male";
     age?: number;
     familyHistory?: FamilyHistoryInput;
+    mode?: "personal" | "demo" | "shared";
   },
 ): AnalysisResult {
   const scores = getActivePrsScores();
@@ -92,6 +99,7 @@ export function runAnalysis(
     reports,
     globalDisclaimer: GLOBAL_DISCLAIMER,
     dataNotStored: true,
+    mode: options.mode ?? "personal",
   };
 
   if (options.familyHistory?.provided) {

@@ -39,6 +39,15 @@ export interface PopulationReference {
   source: string;
 }
 
+export interface SnpContribution {
+  rsid: string;
+  effectAllele: string;
+  userGenotype: string;
+  dosage: number;
+  weight: number;
+  contribution: number;
+}
+
 export interface PrsComputationResult {
   pgsId: string;
   cancerType: CancerType;
@@ -52,6 +61,32 @@ export interface PrsComputationResult {
   matchRate: number;
   relativeRiskPerSd?: number;
   citation: string;
+  topContributors: SnpContribution[];
+}
+
+export interface RiskStory {
+  headline: string;
+  lifetimeFraming: string;
+  populationComparison: string;
+  plainMeaning: string;
+  emphasis: "reassuring" | "neutral" | "attention";
+}
+
+export interface ScreeningTimelineItem {
+  age: number;
+  label: string;
+  description: string;
+  source: "NCCN" | "USPSTF" | "ACS" | "general";
+  framing: "general_guideline" | "educational";
+}
+
+export interface AncestryConfidence {
+  level: "high" | "moderate" | "low";
+  label: string;
+  matchPercent: number;
+  applicabilityPercent: number;
+  populationNote: string;
+  warnings: string[];
 }
 
 export interface ScreeningRecommendation {
@@ -66,6 +101,9 @@ export interface CancerReport {
   label: string;
   prs: PrsComputationResult;
   plainLanguageSummary: string;
+  riskStory: RiskStory;
+  timeline: ScreeningTimelineItem[];
+  ancestryConfidence: AncestryConfidence;
   screening: ScreeningRecommendation[];
   limitations: string[];
 }
@@ -83,6 +121,8 @@ export interface FamilyHistoryInput {
   youngestAffectedAge?: number;
 }
 
+export type AnalysisMode = "personal" | "demo" | "shared";
+
 export interface AnalysisResult {
   analyzedAt: string;
   vendor: GenotypeVendor;
@@ -90,6 +130,7 @@ export interface AnalysisResult {
   reports: CancerReport[];
   globalDisclaimer: string;
   dataNotStored: boolean;
+  mode: AnalysisMode;
   /** Present only when user opted into the optional questionnaire */
   familyHistory?: FamilyHistoryInput;
   familyHistorySummary?: string[];
