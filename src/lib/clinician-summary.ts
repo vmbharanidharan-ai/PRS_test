@@ -1,8 +1,5 @@
 import { PGS_CATALOG_IDS } from "./prs-registry";
-import {
-  loadSyntheticCalibration,
-  resolvePopulationCalibration,
-} from "./synthetic-calibration";
+import { VALIDITY_MODE } from "./validity-config";
 import type { AnalysisResult, CancerReport } from "./types";
 
 export interface ClinicianPdfBlock {
@@ -50,7 +47,8 @@ export function buildClinicianLimitationsBlock(): string[] {
     "• A low polygenic percentile or modeled risk does NOT imply safety from cancer.",
     "• This tool screens only a tiny set of consumer-chip SNP proxies; >99% of hereditary cancer mutations are not assessed.",
     "• Family history captured here is self-reported and incomplete versus a formal pedigree.",
-    "• Absolute risk percentages are literature-calibrated educational mappings (PGS Catalog + SEER-scale baseline + published HRs), not individually validated predictions.",
+    "• Personalized absolute risk is DISABLED; outputs are relative risk (RR) and percentile with SEER baseline as context only.",
+    "• Literature β = ln(HR/SD) only — no synthetic cohort fitting in production.",
     "• Ancestry calibration uses public reference panels; misclassification can distort percentiles.",
   ];
 }
@@ -62,26 +60,17 @@ export function buildClinicianCancerBlock(report: CancerReport): string[] {
     `Public polygenic score ID: ${pgsId}`,
   ];
 
-  const synCal = loadSyntheticCalibration(report.cancerType);
-  if (synCal) {
-    const pop = report.prs?.referencePopulation ?? synCal.default_population;
-    const pc = resolvePopulationCalibration(synCal, pop);
-    lines.push(
-      `Level 4 synthetic calibration: ${synCal.version} (${synCal.method})`,
-      `  Literature HR/SD anchor: ${pc.literature_hr_per_sd} → β_lit = ${pc.literature_beta_prs.toFixed(4)}`,
-      `  Synthetic cohort fit (log-odds slope): ${pc.synthetic_slope_log_odds.toFixed(4)}`,
-      `  Slope ratio (fitted/literature): ${pc.slope_ratio_fitted_vs_literature}`,
-      `  Clinically valid: ${synCal.clinically_valid ? "yes" : "NO — educational only"}`,
-      `  ${synCal.disclaimer}`,
-    );
-  }
+  lines.push(
+    `Production stack: three layers (synthetic calibration ${VALIDITY_MODE.SYNTHETIC_CALIBRATION ? "ON" : "OFF"})`,
+  );
 
   if (report.prs) {
     lines.push(
       `Raw PRS sum (Σ dosage×β, PGS Catalog weights): ${report.prs.rawScore.toFixed(4)}`,
+      `Reference status: ${report.prs.referenceCalibrationStatus ?? "unknown"}`,
       `Reference population panel: ${report.prs.referencePopulation ?? "not specified"}`,
-      `Empirical percentile vs reference: ${report.prs.percentile.toFixed(1)}`,
-      `Z-score (reference μ/σ): ${report.prs.zScore.toFixed(3)}`,
+      `Empirical percentile vs reference: ${report.prs.percentile != null ? report.prs.percentile.toFixed(1) : "N/A (uncalibrated)"}`,
+      `Z-score (reference μ/σ): ${report.prs.zScore != null ? report.prs.zScore.toFixed(3) : "N/A"}`,
       `Variant match rate for score: ${(report.prs.matchRate * 100).toFixed(1)}%`,
       `Calibration method: ${report.prs.calibrationMethod ?? "unknown"}`,
       `PGS citation: ${report.prs.citation}`,
@@ -95,22 +84,23 @@ export function buildClinicianCancerBlock(report: CancerReport): string[] {
   const pop = report.population;
   lines.push(
     `Risk tier label (educational banding): ${pop.riskBand}`,
-    `Modeled lifetime risk estimate (educational; Chatterjee mapping): ${pop.lifetimeRiskPercent}%`,
+    `Relative risk (primary output): ${pop.relativeRisk.toFixed(3)}`,
+    `Population baseline lifetime % (informational only): ${pop.populationBaselineLifetimePercent}%`,
   );
 
   if (pop.uncertainty) {
     lines.push(
-      `95% bootstrap interval (coverage/ancestry uncertainty): ${pop.uncertainty.ciLow}% – ${pop.uncertainty.ciHigh}%`,
-      `Model confidence score (heuristic): ${pop.uncertainty.confidenceScore}`,
+      `RR uncertainty interval (deterministic SE): ${pop.uncertainty.relativeRiskCiLow} – ${pop.uncertainty.relativeRiskCiHigh}`,
+      `Model confidence score: ${pop.uncertainty.confidenceScore}`,
       `PRS SNP coverage factor: ${pop.uncertainty.prsCoverage}`,
     );
   }
 
   if (pop.absoluteRisk) {
     lines.push(
-      `Joint model: ${pop.absoluteRisk.method}`,
-      `log(RR) = ${pop.absoluteRisk.logRelativeRisk.toFixed(4)} → RR = ${pop.absoluteRisk.rrTotal.toFixed(3)}`,
-      `Baseline R_base ≈ ${(pop.absoluteRisk.baselineLifetimeRisk * 100).toFixed(2)}%`,
+      `Model: ${pop.absoluteRisk.method}`,
+      `log(RR) = ${pop.absoluteRisk.logRelativeRisk.toFixed(4)} · β_prs(lit) = ${pop.absoluteRisk.literatureBetaPrs?.toFixed(4) ?? "—"}`,
+      `Absolute personalized risk: disabled`,
     );
   }
 

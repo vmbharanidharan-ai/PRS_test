@@ -4,8 +4,8 @@
  * @see https://www.cancer.gov/bcrisktool/
  */
 
-import { absoluteLifetimeRisk } from "../absolute-risk";
 import { baselineFor } from "../epidemiology-baselines";
+import { VALIDITY_DISCLAIMERS } from "../validity-config";
 import type { FamilyHistoryInput, UserProfile } from "../types";
 
 const DEFAULT_MENARCHE = 12;
@@ -58,15 +58,16 @@ export function gailLiteBreastRisk(profile: UserProfile): ClinicalModelResult {
 
   const logRr = gailLogRelativeRisk(profile);
   const rrClinical = Math.exp(logRr);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, logRr);
+  const popBaselinePct = Math.round(rBaseAdj * 1000) / 10;
 
   return {
-    absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,
+    absoluteLifetimeRiskPercent: popBaselinePct,
     rrClinical,
     modelName: "Gail Model (simplified BCRAT)",
     modelCitation: "Gail MH et al.; NCI BCRAT. Defaults used for menarche/parity if not collected.",
     notes: [
-      "Simplified Gail implementation — not a substitute for NCI BCRAT web tool.",
+      "Simplified Gail — not comparable to certified NCI BCRAT output.",
+      VALIDITY_DISCLAIMERS.notPersonalizedProbability,
       "Reproductive history defaults: menarche 12, first live birth age 25.",
     ],
   };

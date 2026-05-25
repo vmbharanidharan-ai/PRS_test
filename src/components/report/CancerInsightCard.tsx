@@ -24,6 +24,21 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
       )}
 
       <p className="mt-4 text-lg font-medium text-slate-900">{riskStory.headline}</p>
+      <p className="mt-3 rounded-lg border border-brand-100 bg-brand-50/40 px-3 py-2 text-sm font-medium text-brand-950">
+        Relative risk vs reference: {population.relativeRisk.toFixed(2)}
+        {population.uncertainty && (
+          <span className="font-normal text-brand-800">
+            {" "}
+            (approx. {population.uncertainty.relativeRiskCiLow}–
+            {population.uncertainty.relativeRiskCiHigh})
+          </span>
+        )}
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        Population baseline context (SEER-scale, not personalized): ~
+        {population.populationBaselineLifetimePercent}% lifetime in general
+        population
+      </p>
       <p className="mt-2 text-sm text-slate-700">{riskStory.lifetimeFraming}</p>
       <p className="mt-3 rounded-lg bg-brand-50/50 px-3 py-2 text-sm text-brand-950">
         {riskStory.populationComparison}
@@ -55,7 +70,10 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
         <div className="mt-3 space-y-2 text-xs text-slate-500">
           {prs && (
             <p>
-              PRS: {prs.pgsId} · {prs.percentile.toFixed(0)}th percentile
+              PRS: {prs.pgsId} ·{" "}
+              {prs.percentile != null
+                ? `${prs.percentile.toFixed(0)}th percentile`
+                : "uncalibrated (no matched 1KG panel)"}
               {prs.referencePopulation
                 ? ` · ref ${prs.referencePopulation} (n≈${prs.referenceNIndividuals ?? "?"})`
                 : ""}{" "}
@@ -66,18 +84,14 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
             </p>
           )}
           <p>
-            Lifetime risk: ~{population.lifetimeRiskPercent}%
+            RR: {population.relativeRisk.toFixed(2)} · log(RR) ={" "}
+            {population.absoluteRisk?.logRelativeRisk.toFixed(3) ?? "—"}
             {population.uncertainty && (
               <span className="block text-xs text-slate-600 mt-1">
-                95% CI: {population.uncertainty.ciLow}%–{population.uncertainty.ciHigh}%
-                · confidence {Math.round(population.uncertainty.confidenceScore * 100)}%
-                · PRS coverage {Math.round(population.uncertainty.prsCoverage * 100)}%
-              </span>
-            )}
-            {population.absoluteRisk && (
-              <span className="block text-xs text-slate-500 mt-1">
-                log(RR) = {population.absoluteRisk.logRelativeRisk.toFixed(3)} → RR{" "}
-                {population.absoluteRisk.rrTotal.toFixed(2)} (joint model, not multiplied)
+                RR interval: {population.uncertainty.relativeRiskCiLow}–
+                {population.uncertainty.relativeRiskCiHigh} · confidence{" "}
+                {Math.round(population.uncertainty.confidenceScore * 100)}% · PRS
+                coverage {Math.round(population.uncertainty.prsCoverage * 100)}%
               </span>
             )}
           </p>

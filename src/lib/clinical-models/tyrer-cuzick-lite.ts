@@ -3,8 +3,8 @@
  * @see Tyrer J et al., J Med Genet 2004; IBIS v8
  */
 
-import { absoluteLifetimeRisk } from "../absolute-risk";
 import { baselineFor } from "../epidemiology-baselines";
+import { VALIDITY_DISCLAIMERS } from "../validity-config";
 import type { FamilyHistoryInput, UserProfile } from "../types";
 
 function tyrerCuzickLogRr(fh?: FamilyHistoryInput): number {
@@ -33,15 +33,14 @@ export function tyrerCuzickLiteBreastRisk(
   const ageFactor = age < 40 ? 0.85 : age > 60 ? 1.1 : 1;
   const logRr = tyrerCuzickLogRr(profile.familyHistory) + Math.log(ageFactor);
   const rrClinical = Math.exp(logRr);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, logRr);
-
   return {
-    absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,
+    absoluteLifetimeRiskPercent: Math.round(rBaseAdj * 1000) / 10,
     rrClinical,
     modelName: "Tyrer-Cuzick / IBIS (simplified)",
     modelCitation: "Tyrer J et al., J Med Genet 2004; family-history non-linear terms.",
     notes: [
-      "IBIS-lite uses family structure; full IBIS requires detailed pedigree entry.",
+      "IBIS-lite — not comparable to certified IBIS output.",
+      VALIDITY_DISCLAIMERS.notPersonalizedProbability,
       "Ovarian + breast FH combined when both reported.",
     ],
   };

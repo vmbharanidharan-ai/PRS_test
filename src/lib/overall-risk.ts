@@ -48,7 +48,8 @@ export function computeOverallRisk(reports: CancerReport[]): OverallRiskSummary 
   let maxTier: RiskTier = "low";
 
   for (const r of reports) {
-    const pct = r.prs?.percentile ?? r.population.centralPercentile;
+    const pct =
+      r.prs?.percentile ?? r.population.centralPercentile ?? 0;
     const tier = r.prs?.riskTier ?? r.population.riskBand;
     if (pct > maxPercentile) {
       maxPercentile = pct;

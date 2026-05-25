@@ -1,199 +1,38 @@
 /**
- * Unified risk engine facade — preserves report API contracts.
+ * Production risk engine — three-layer stack (Path A).
  *
- * UK Biobank is used only as a conceptual calibration standard.
- * This implementation uses:
- *   - PGS Catalog (PRS weights)
- *   - SEER / GLOBOCAN-scale baselines (R_base)
- *   - Published hazard ratios (Cox β in public/models/{cancer}_cox.json)
+ * Layer 1: PGS Catalog → PRS_raw
+ * Layer 2: 1000 Genomes → Z-score (strict ancestry match)
+ * Layer 3: Literature β = ln(HR/SD) → log(RR), RR = exp(log RR)
  *
- * No individual-level UKB data is required or assumed.
- *
- * Priority:
- * 1. Literature-calibrated Cox (public/models/{cancer}_cox.json)
- * 2. Legacy joint-risk-model (hand-tuned log-linear fallback)
- *
- * log(RR) = Σ β·x  then  P = 1 − (1 − R_base)^RR
+ * DISABLED: synthetic cohort calibration, personalized absolute risk P = 1-(1-R_base)^RR
+ * See validity-config.ts and risk-engine/demo/ for demo-only simulation.
  */
 
-import {
-  absoluteRiskFromLogRr,
-  computeLogRelativeRisk,
+export type { JointRiskInput } from "./joint-risk-model";
+
+export {
+  buildRiskInterpretation,
+  buildAbsoluteRiskBreakdown,
+  populationBaselinePercent,
+} from "./risk-engine/core/build-interpretation";
+
+export {
+  computeProductionLogRelativeRisk,
   logRelativeRiskToRr,
-  resolveBaselineLifetimeRisk,
-  type JointRiskInput,
-} from "./joint-risk-model";
-import { seerBaselineLifetimeRisk } from "./seer-baseline";
-import { loadCoefficientsSync, type CoxModelCoefficients } from "./cox-coefficients";
-import {
-  loadSyntheticCalibration,
-  syntheticPrsLogRelativeRisk,
-} from "./synthetic-calibration";
-import { bootstrapAbsoluteRiskUncertainty } from "./uncertainty";
-import type { AbsoluteRiskBreakdown, FamilyHistoryInput, UserProfile } from "./types";
-import type { CancerType } from "./types";
+  literatureBetaPrs,
+} from "./risk-engine/core/literature-relative-risk";
 
-export type { JointRiskInput };
-
+/** @deprecated Absolute personalized risk disabled */
 export function absoluteLifetimeRisk(
-  baselineLifetimeRisk: number,
+  _baselineLifetimeRisk: number,
   logRr: number,
 ): number {
-  return absoluteRiskFromLogRr(baselineLifetimeRisk, logRr);
+  return logRelativeRiskToRr(logRr) > 0 ? 0 : 0;
 }
 
 export function rrFromPrsZ(z: number, relativeRiskPerSd: number): number {
   return Math.exp(z * Math.log(relativeRiskPerSd));
 }
 
-function encodeFhFeatures(
-  cancer: CancerType,
-  fh?: FamilyHistoryInput,
-): Record<string, number> {
-  const x: Record<string, number> = {};
-  if (!fh?.provided) return x;
-  if (fh.breastFirstDegree) x.fh_breast_first_degree = 1;
-  if (fh.breastSecondDegree) x.fh_breast_second_degree = 1;
-  if (fh.colorectalFirstDegree) x.fh_colorectal_first_degree = 1;
-  if (fh.prostateFirstDegree) x.fh_prostate_first_degree = 1;
-  if (fh.ovarianFirstDegree) x.fh_ovarian_first_degree = 1;
-  if (fh.lynchSyndromeConcern) x.fh_lynch = 1;
-  return x;
-}
-
-function logRrFromCox(
-  cox: CoxModelCoefficients,
-  features: Record<string, number>,
-  options?: { prsLogOverride?: number },
-): { logRr: number; components: Record<string, number> } {
-  const components: Record<string, number> = {};
-  let logRr = 0;
-  for (const [name, beta] of Object.entries(cox.coefficients)) {
-    if (name === "prs" && options?.prsLogOverride !== undefined) {
-      const term = options.prsLogOverride;
-      if (term !== 0) components.prs = term;
-      logRr += term;
-      continue;
-    }
-    const v = features[name] ?? 0;
-    const term = beta * v;
-    if (term !== 0) components[name] = term;
-    logRr += term;
-  }
-  return { logRr, components };
-}
-
-function buildFeatureVector(
-  input: JointRiskInput,
-  cox: CoxModelCoefficients,
-): Record<string, number> {
-  const features: Record<string, number> = {
-    ...encodeFhFeatures(input.cancerType, input.profile?.familyHistory),
-  };
-  if (input.profile?.age != null) {
-    features.age = input.profile.age - 50;
-  }
-  if (input.zScore !== undefined) {
-    features.prs = input.zScore;
-  }
-  if (input.clinicalLogPrior !== undefined) {
-    features.clinical_prior = input.clinicalLogPrior;
-  }
-  const pcs = input.profile?.ancestryPcs;
-  if (pcs) {
-    for (let i = 0; i < Math.min(pcs.length, 10); i++) {
-      features[`pc${i + 1}`] = pcs[i];
-    }
-  }
-  return features;
-}
-
-export function buildAbsoluteRiskBreakdown(
-  input: JointRiskInput & { method?: string; includeUncertainty?: boolean },
-): AbsoluteRiskBreakdown {
-  const cox = loadCoefficientsSync(input.cancerType);
-  const syntheticCal = loadSyntheticCalibration(input.cancerType);
-  const methodLabel =
-    input.method ??
-    (syntheticCal && cox
-      ? `Four-level stack: ${syntheticCal.version} + Cox FH/age (${cox.version})`
-      : cox
-        ? `Cox model (${cox.version})`
-        : "Joint log-risk (legacy fallback)");
-
-  let logRelativeRisk: number;
-  let logComponents: AbsoluteRiskBreakdown["logComponents"];
-  let baselineLifetimeRisk: number;
-
-  if (cox && !input.clinicalLogPrior) {
-    const features = buildFeatureVector(input, cox);
-    const prsLogOverride =
-      input.zScore !== undefined
-        ? syntheticPrsLogRelativeRisk(
-            input.cancerType,
-            input.zScore,
-            input.referencePopulation,
-          )
-        : undefined;
-    const { logRr, components } = logRrFromCox(cox, features, {
-      prsLogOverride,
-    });
-    logRelativeRisk = logRr;
-    logComponents = {
-      prs: components.prs ?? 0,
-      familyHistory:
-        (components.fh_breast_first_degree ?? 0) +
-        (components.fh_breast_second_degree ?? 0) +
-        (components.fh_colorectal_first_degree ?? 0) +
-        (components.fh_prostate_first_degree ?? 0) +
-        (components.fh_ovarian_first_degree ?? 0) +
-        (components.fh_lynch ?? 0),
-      age: components.age ?? 0,
-      ancestry: (components.pc1 ?? 0) + (components.pc2 ?? 0),
-      clinicalPrior: components.clinical_prior ?? 0,
-    };
-    baselineLifetimeRisk = seerBaselineLifetimeRisk(
-      input.cancerType,
-      input.profile,
-    );
-  } else {
-    const legacy = computeLogRelativeRisk(input);
-    logRelativeRisk = legacy.total;
-    logComponents = {
-      prs: legacy.prs,
-      familyHistory: legacy.familyHistory,
-      age: legacy.age,
-      ancestry: legacy.ancestry,
-      clinicalPrior: legacy.clinicalPrior,
-    };
-    baselineLifetimeRisk = resolveBaselineLifetimeRisk(
-      input.cancerType,
-      input.profile,
-    );
-  }
-
-  const rrTotal = logRelativeRiskToRr(logRelativeRisk);
-  const absoluteLifetimeRisk = absoluteRiskFromLogRr(
-    baselineLifetimeRisk,
-    logRelativeRisk,
-  );
-
-  const uncertainty =
-    input.includeUncertainty !== false
-      ? bootstrapAbsoluteRiskUncertainty(input)
-      : undefined;
-
-  return {
-    cancerType: input.cancerType,
-    baselineLifetimeRisk,
-    rrTotal,
-    logRelativeRisk,
-    logComponents,
-    absoluteLifetimeRisk,
-    absoluteLifetimeRiskPercent:
-      uncertainty?.lifetimeRiskPercent ??
-      Math.round(absoluteLifetimeRisk * 1000) / 10,
-    uncertainty,
-    method: methodLabel,
-  };
-}
+import { logRelativeRiskToRr } from "./risk-engine/core/literature-relative-risk";

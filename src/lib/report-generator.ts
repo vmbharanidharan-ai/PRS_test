@@ -28,24 +28,32 @@ const CANCER_LABELS: Record<CancerType, string> = {
   ovarian: "Ovarian cancer",
 };
 
-function plainLanguageSummary(prs: PrsComputationResult, popPct: number): string {
+function plainLanguageSummary(
+  prs: PrsComputationResult,
+  relativeRisk: number,
+  popBaselinePct: number,
+): string {
   const tierPhrases: Record<string, string> = {
-    low: "lower than most people",
-    average: "similar to most people in the reference population",
-    moderate: "somewhat higher than most people",
-    high: "higher than most people (top ~5% of the reference group)",
+    low: "lower than most people in the reference distribution",
+    average: "similar to the reference distribution",
+    moderate: "somewhat above the reference distribution",
+    high: "above the reference distribution (upper tail)",
   };
-  const tier = tierPhrases[prs.riskTier] ?? "within the population range";
+  const tier = tierPhrases[prs.riskTier] ?? "within the reference range";
   const matchPct = Math.round(prs.matchRate * 100);
-  return `Your polygenic score ranks about the ${prs.percentile.toFixed(0)}th percentile (${tier}). Calibrated absolute lifetime risk ~${popPct}% (Chatterjee joint model). ${matchPct}% variant match.`;
+  const pctStr =
+    prs.percentile != null
+      ? `about the ${prs.percentile.toFixed(0)}th percentile`
+      : "percentile unavailable (ancestry reference mismatch)";
+  return `Polygenic score ranks ${pctStr} (${tier}). Relative risk vs reference ≈ ${relativeRisk.toFixed(2)} (literature HR/SD). U.S. population baseline context ~${popBaselinePct}% lifetime (informational only — not your personal probability). ${matchPct}% SNP match.`;
 }
 
 function limitationsFor(prs: PrsComputationResult): string[] {
   const limits = [
     "Personal polygenic score from your DNA — common variants only, not BRCA/Lynch unless flagged in pathogenic screen.",
-    prs.calibrationMethod === "legacy_hwe"
-      ? "Warning: empirical reference panel missing — using legacy HWE fallback."
-      : `Empirical PRS percentile (${prs.referencePopulation ?? "ref"}). Absolute risk from log-linear joint model with bootstrap CI — not multiplicative RR stacking.`,
+    prs.referenceCalibrationStatus === "uncalibrated_reference_warning"
+      ? "Warning: ancestry-matched 1000 Genomes reference required — Z/percentile not computed."
+      : `1000G reference (${prs.referencePopulation ?? "ref"}) for Z normalization only. Output: relative risk + percentile — not personalized absolute probability.`,
     "Educational only — not medical guidance or a diagnosis.",
   ];
   const matchWarning = validateMatchRateResult(prs);
@@ -79,9 +87,14 @@ function buildCancerReport(
     prs,
     plainLanguageSummary: plainLanguageSummary(
       prs,
-      population.lifetimeRiskPercent,
+      population.relativeRisk,
+      population.populationBaselineLifetimePercent,
     ),
-    riskStory: buildRiskStory(CANCER_LABELS[prs.cancerType], prs),
+    riskStory: buildRiskStory(
+      CANCER_LABELS[prs.cancerType],
+      prs,
+      population.relativeRisk,
+    ),
     timeline: buildScreeningTimeline(prs.cancerType, prs, options),
     ancestryConfidence: buildAncestryConfidence(prs),
     screening: [...base, ...fhExtra],

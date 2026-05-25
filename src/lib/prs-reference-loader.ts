@@ -5,6 +5,10 @@ import type {
   ReferencePopulation,
 } from "./prs-reference-types";
 import { ANCESTRY_TO_REFERENCE } from "./prs-reference-types";
+import {
+  getStrictReference,
+  selectStrictReferencePanel,
+} from "./risk-engine/core/strict-reference";
 
 import breastEur from "@/data/prs-reference/breast/PGS005104/EUR.json";
 import breastAfr from "@/data/prs-reference/breast/PGS005104/AFR.json";
@@ -52,62 +56,24 @@ export function getReferenceDistribution(
   return BY_KEY.get(`${cancerType}:${pgsId}:${population}`);
 }
 
-const MIXTURE_DEFAULT: Partial<Record<ReferencePopulation, number>> = {
-  EUR: 0.5,
-  AFR: 0.2,
-  EAS: 0.15,
-  SAS: 0.1,
-  AMR: 0.05,
-};
-
-/**
- * Select reference panel from user ancestry; use mixture when confidence is low.
- */
+/** Strict ancestry-matched panel only — no mixture (see validity-config). */
 export function selectReferencePanel(
   cancerType: CancerType,
   pgsId: string,
   ancestry?: AncestryGroup,
   ancestryConfidence = 0.85,
 ): ReferencePanelSelection {
-  const warnings: string[] = [];
-  const mapped = ancestry ? ANCESTRY_TO_REFERENCE[ancestry] : "MULTI";
-
-  if (ancestryConfidence < 0.7 || mapped === "MULTI" || !ancestry) {
-    warnings.push(
-      "Ancestry uncertain or mixed — PRS percentile uses a multi-population reference mixture; precision is reduced.",
-    );
-    const primary = getReferenceDistribution(cancerType, pgsId, "EUR");
-    if (!primary) {
-      warnings.push("Reference panel missing; using best available population.");
-    }
-    return {
-      population: "MULTI",
-      ancestryConfidence,
-      usedMixture: true,
-      mixtureWeights: MIXTURE_DEFAULT,
-      warnings,
-    };
-  }
-
-  const pop = mapped as ReferencePopulation;
-  const ref = getReferenceDistribution(cancerType, pgsId, pop);
-  if (!ref) {
-    warnings.push(
-      `${pop} reference not bundled — falling back to EUR reference panel.`,
-    );
-    return {
-      population: "EUR",
-      ancestryConfidence,
-      usedMixture: false,
-      warnings,
-    };
-  }
-
-  return {
-    population: pop,
+  const strict = selectStrictReferencePanel(
+    cancerType,
+    pgsId,
+    ancestry,
     ancestryConfidence,
+  );
+  return {
+    population: strict.population,
+    ancestryConfidence: strict.ancestryConfidence,
     usedMixture: false,
-    warnings,
+    warnings: strict.warnings,
   };
 }
 
@@ -116,8 +82,7 @@ export function getPrimaryReference(
   pgsId: string,
   selection: ReferencePanelSelection,
 ): PrsReferenceDistribution | undefined {
-  if (!selection.usedMixture) {
-    return getReferenceDistribution(cancerType, pgsId, selection.population);
-  }
-  return getReferenceDistribution(cancerType, pgsId, "EUR");
+  return getReferenceDistribution(cancerType, pgsId, selection.population);
 }
+
+export { ANCESTRY_TO_REFERENCE };

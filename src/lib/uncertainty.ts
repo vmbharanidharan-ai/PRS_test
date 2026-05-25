@@ -1,83 +1,90 @@
 /**
- * Uncertainty layers: PRS coverage, ancestry entropy, bootstrap on log-risk.
+ * Deterministic uncertainty from coverage + ancestry match — no bootstrap Z resampling.
  */
 
-import {
-  absoluteRiskFromLogRr,
-  computeLogRelativeRisk,
-  resolveBaselineLifetimeRisk,
-  type JointRiskInput,
-} from "./joint-risk-model";
 import { ancestryEntropy } from "./ancestry-inference";
+import type { JointRiskInput } from "./joint-risk-model";
+import {
+  computeProductionLogRelativeRisk,
+  logRelativeRiskToRr,
+} from "./risk-engine/core/literature-relative-risk";
 import type { RiskUncertainty } from "./types";
 
-const BOOTSTRAP_N = 80;
-
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1103515245 + 12345) & 0x7fffffff;
-    return s / 0x7fffffff;
-  };
-}
-
-/** Inflate Z uncertainty when SNP coverage is low */
 export function prsCoverageScore(matchRate: number): number {
   return Math.max(0, Math.min(1, matchRate));
 }
 
-export function zStandardError(matchRate: number): number {
+/** SE grows when SNP match rate is low or ancestry reference is weak */
+export function logRrStandardError(
+  matchRate: number,
+  ancestryConfidence: number,
+  ancestryDistance = 0,
+): number {
   const coverage = prsCoverageScore(matchRate);
-  if (coverage >= 0.95) return 0.08;
-  if (coverage >= 0.8) return 0.15;
-  return 0.15 + (1 - coverage) * 0.5;
+  const base =
+    coverage >= 0.95 ? 0.06 : coverage >= 0.8 ? 0.12 : 0.12 + (1 - coverage) * 0.35;
+  const ancPenalty = (1 - ancestryConfidence) * 0.15 + ancestryDistance * 0.1;
+  return base + ancPenalty;
 }
 
-export function bootstrapAbsoluteRiskUncertainty(
+function sigmoid(x: number): number {
+  return 1 / (1 + Math.exp(-x));
+}
+
+export function computeConfidenceScore(
+  matchRate: number,
+  ancestryConfidence: number,
+): number {
+  const a = 2.2;
+  const b = 1.4;
+  const raw = a * prsCoverageScore(matchRate) + b * ancestryConfidence - 1.2;
+  return Math.max(0.15, Math.min(0.95, sigmoid(raw)));
+}
+
+/**
+ * Propagate SE on log(RR) → RR interval (no fake cohort resampling).
+ */
+export function computeDeterministicUncertainty(
   input: JointRiskInput,
-  seed = 42,
+  logRr: number,
+  rrTotal: number,
 ): RiskUncertainty {
-  const rng = seededRandom(seed);
-  const baseRisk = resolveBaselineLifetimeRisk(input.cancerType, input.profile);
-  const zSe =
-    input.zScore !== undefined && input.matchRate !== undefined
-      ? zStandardError(input.matchRate)
-      : 0.2;
-
-  const risks: number[] = [];
-  for (let i = 0; i < BOOTSTRAP_N; i++) {
-    const zBoot =
-      input.zScore !== undefined
-        ? input.zScore + (rng() - 0.5) * 2 * zSe
-        : undefined;
-    const logRr = computeLogRelativeRisk({ ...input, zScore: zBoot }).total;
-    risks.push(absoluteRiskFromLogRr(baseRisk, logRr) * 100);
-  }
-
-  risks.sort((a, b) => a - b);
-  const lo = risks[Math.floor(BOOTSTRAP_N * 0.025)];
-  const hi = risks[Math.floor(BOOTSTRAP_N * 0.975)];
-  const mid = risks[Math.floor(BOOTSTRAP_N * 0.5)];
-
-  const coverage = input.matchRate !== undefined ? prsCoverageScore(input.matchRate) : 0.5;
+  const matchRate = input.matchRate ?? 0.5;
   const ancEntropy = input.profile?.ancestryProportions
     ? ancestryEntropy(input.profile.ancestryProportions)
-    : 0.6;
+    : 0.5;
   const ancestryConf =
-    input.profile?.ancestryConfidence ?? 1 - ancEntropy * 0.5;
+    input.profile?.ancestryConfidence ?? Math.max(0.3, 1 - ancEntropy * 0.5);
 
-  const confidenceScore = Math.max(
-    0.2,
-    Math.min(0.95, coverage * 0.45 + ancestryConf * 0.35 + 0.2),
-  );
+  const uncalibrated =
+    input.referenceCalibrationStatus === "uncalibrated_reference_warning";
+  const se = uncalibrated
+    ? 0.45
+    : logRrStandardError(matchRate, ancestryConf);
+
+  const logLo = logRr - 1.96 * se;
+  const logHi = logRr + 1.96 * se;
+  const rrLo = logRelativeRiskToRr(logLo);
+  const rrHi = logRelativeRiskToRr(logHi);
+
+  const confidenceScore = computeConfidenceScore(matchRate, ancestryConf);
 
   return {
-    lifetimeRiskPercent: Math.round(mid * 10) / 10,
-    ciLow: Math.round(lo * 10) / 10,
-    ciHigh: Math.round(hi * 10) / 10,
+    relativeRisk: Math.round(rrTotal * 100) / 100,
+    relativeRiskCiLow: Math.round(rrLo * 100) / 100,
+    relativeRiskCiHigh: Math.round(rrHi * 100) / 100,
     confidenceScore: Math.round(confidenceScore * 100) / 100,
-    prsCoverage: Math.round(coverage * 100) / 100,
+    prsCoverage: Math.round(prsCoverageScore(matchRate) * 100) / 100,
     ancestryConfidence: Math.round(ancestryConf * 100) / 100,
-    method: "bootstrap_log_risk_80",
+    method: "deterministic_log_rr_se",
   };
+}
+
+/** @deprecated Use computeDeterministicUncertainty */
+export function bootstrapAbsoluteRiskUncertainty(
+  input: JointRiskInput,
+): RiskUncertainty {
+  const logRr = computeProductionLogRelativeRisk(input).total;
+  const rr = logRelativeRiskToRr(logRr);
+  return computeDeterministicUncertainty(input, logRr, rr);
 }

@@ -21,12 +21,11 @@ export function MethodologySection({
         )}
         {(precisionLevel === "genetic" || precisionLevel === "demo") && (
           <p>
-            <strong>Four-level stack (Path A — research honesty):</strong> (1) PGS
-            Catalog + OpenGWAS provenance → raw PRS; (2) 1000 Genomes reference →
-            percentile/Z; (3) SEER baseline R<sub>base</sub>; (4) synthetic cohort
-            pseudo-calibration (literature HR/SD + simulated outcomes — not UKB
-            longitudinal data). Absolute risk: P = 1 − (1 − R<sub>base</sub>
-            )<sup>RR</sup>. Not clinically validated.
+            <strong>Three-layer production stack:</strong> (1) PGS Catalog → PRS;
+            (2) 1000 Genomes (strict ancestry match) → Z and percentile; (3)
+            literature β = ln(HR/SD) → relative risk. SEER baseline is context
+            only. Synthetic cohort calibration and personalized absolute risk are
+            disabled. Not clinically validated.
           </p>
         )}
         <p>

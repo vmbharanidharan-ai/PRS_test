@@ -3,8 +3,8 @@
  * @see Kastrinos F et al., Gastroenterology 2017 (PREMM5)
  */
 
-import { absoluteLifetimeRisk } from "../absolute-risk";
 import { baselineFor } from "../epidemiology-baselines";
+import { VALIDITY_DISCLAIMERS } from "../validity-config";
 import type { FamilyHistoryInput, UserProfile } from "../types";
 import type { ClinicalModelResult } from "./gail-lite";
 
@@ -41,16 +41,15 @@ export function premm5LiteColorectalRisk(profile: UserProfile): ClinicalModelRes
 
   const lynchProb = premm5LynchProbability(profile);
   const rrClinical = 1 + lynchProb * 4 + (profile.familyHistory?.colorectalFirstDegree ? 1.2 : 0);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, Math.log(Math.max(0.01, rrClinical)));
-
   return {
-    absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,
+    absoluteLifetimeRiskPercent: Math.round(rBaseAdj * 1000) / 10,
     rrClinical,
     modelName: "PREMM5-inspired (Lynch + CRC FH)",
     modelCitation: "Kastrinos F et al., Gastroenterology 2017 (PREMM5).",
     notes: [
       `Estimated Lynch/MMR carrier probability (educational): ~${Math.round(lynchProb * 100)}%.`,
-      "Not a germline test — discuss genetic counseling if elevated.",
+      VALIDITY_DISCLAIMERS.notPersonalizedProbability,
+      "Not certified PREMM5 — not a germline test.",
     ],
   };
 }

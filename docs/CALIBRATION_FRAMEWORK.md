@@ -1,79 +1,61 @@
-# GeneScope calibration framework (Path A)
+# GeneScope calibration framework (Path A — updated)
+
+## Principle
+
+**Reduce unvalidated inference layers.** Separate measured (PRS) from modeled (epidemiological) outputs. Credibility beats complexity.
 
 ## The real constraint
 
-The upgrade is **not blocked by math**. It is blocked by **labeled longitudinal genotype cohorts** (UK Biobank, FinnGen, etc.) in one open download.
+Not blocked by math — blocked by **labeled longitudinal genotype cohorts** (UKB, FinnGen). Production uses **literature β only**; synthetic cohort fitting is **demo/offline only**.
 
-GeneScope chooses **Path A — research-grade honesty**:
+## Three-layer production stack
 
-- Explicitly **synthetic** pseudo-calibration
-- **No** clinical validity claim
-- Publishable as a **modeling methodology** (four-level public stack)
+| Layer | Source | Output |
+|-------|--------|--------|
+| **1 — Genetics** | PGS Catalog (+ OpenGWAS provenance) | PRS_raw = Σ(d×β) |
+| **2 — Normalization** | 1000 Genomes (strict ancestry) | Z, percentile (or uncalibrated warning) |
+| **3 — Interpretation** | Literature HR per SD | log(RR)_PRS = ln(HR/SD)×Z, RR = exp(log RR) |
 
----
+**SEER baseline:** informational population context % only — **not** used in P = 1−(1−R_base)^RR (disabled).
 
-## Four levels
+## Disabled in production (`validity-config.ts`)
 
-| Level | Source | Role |
-|-------|--------|------|
-| **1 — PRS construction** | PGS Catalog, OpenGWAS (provenance), GWAS Catalog | SNP weights β; raw PRS = Σ(d×β) |
-| **2 — Reference distribution** | 1000 Genomes Phase 3 | Empirical percentile & Z vs EUR/AFR/EAS |
-| **3 — Baseline incidence** | SEER | R_base (lifetime risk prior) |
-| **4 — Pseudo calibration** | Literature HR/SD + synthetic cohort fit | Maps Z → log(RR) with fitted intercept/slope |
+| Feature | Status |
+|---------|--------|
+| Personalized absolute risk | `ABSOLUTE_RISK: "disabled"` |
+| Synthetic cohort calibration | `SYNTHETIC_CALIBRATION: false` |
+| Ancestry mixture fallback | `ANCESTRY_MIXTURE_FALLBACK: false` |
+| Hardy–Weinberg percentile fallback | `LEGACY_HWE_FALLBACK: false` |
+| Clinical tool equivalence claims | `CLINICAL_EQUIVALENCE: false` |
 
----
+## Reference panels (Level 2)
 
-## Level 4 — Two options (both implemented)
+- User must specify ancestry matching EUR / AFR / EAS (confidence ≥ 0.7).
+- Otherwise: `uncalibrated_reference_warning` — no Z, no percentile, no RR from PRS.
+- 1000G is for **Z normalization only**, not clinical interpretation.
 
-### Option A — Literature anchor (best academic)
+## Uncertainty
 
-Use published **HR per 1 SD PRS** from UK Biobank translational papers:
+Deterministic propagation: SE = f(match_rate, ancestry_confidence) on log(RR) → RR interval. **No bootstrap Z resampling.**
 
-\[
-\beta_{\text{lit}} = \ln(\text{HR}/\text{SD})
-\]
+## Code layout
 
-Sources: Lewis et al. 2021; Chatterjee 2016; cancer-specific GWAS.
-
-### Option B — Synthetic cohort (engineering)
-
-1. Sample PRS from **1000G-scaled** reference (mean, sd per population).
-2. Standardize to Z.
-3. Assign pseudo-outcomes: Bernoulli(sigmoid(α + β_lit·Z)) with α chosen so prevalence ≈ SEER baseline.
-4. Fit logistic regression → **synthetic_intercept**, **synthetic_slope**.
-5. Compare `slope_ratio = fitted / literature` (internal QA).
-
-This is **internally consistent**, excellent for demos, **not** clinically valid.
-
----
-
-## Artifacts
-
-| File | Description |
-|------|-------------|
-| `public/models/calibration_architecture.json` | Four-level manifest |
-| `public/models/{cancer}_synthetic_calibration.json` | Per-cancer, per-population fits |
-| `src/data/opengwas-provenance.json` | Level 1 OpenGWAS / GWAS links |
-
-## Build
-
-```bash
-npm run build-opengwas-provenance
-npm run build-synthetic-calibration
+```
+src/lib/risk-engine/
+  core/           → production (literature-relative-risk, strict-reference, build-interpretation)
+  demo/           → synthetic simulation (disabled flag)
+validity-config.ts
 ```
 
-Runtime: `src/lib/synthetic-calibration.ts` applies Level 4 in `risk-engine.ts`.
+## Offline demo (not in app outputs)
 
-## Upgrade when data exist
+```bash
+python3 genomics-pipeline/calibration/synthetic_cohort_calibration.py  # methodology / QA only
+```
 
-| Resource | Action |
-|----------|--------|
-| FinnGen | Validate slope_ratio & calibration curves |
-| UK Biobank | `fit_ukbb_models.py` replaces synthetic JSON |
-| Full 1KG PLINK | `run_plink_1kg.sh` replaces bridge reference (Level 2) |
+## Upgrade path
 
----
-
-## Regulatory framing
-
-> Synthetic cohort calibration is for **educational and methodological** use. It does not imply that GeneScope predicts individual cancer risk for clinical decisions.
+| Data | Action |
+|------|--------|
+| Full 1KG PLINK | Gold-standard Level 2 |
+| UKB / FinnGen | Optional cohort-fitted β (replace literature-only) |

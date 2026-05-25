@@ -33,22 +33,34 @@ export interface UserProfile {
   familyHistory?: FamilyHistoryInput;
 }
 
+export type ReferenceCalibrationStatus =
+  | "calibrated_1kg"
+  | "uncalibrated_reference_warning";
+
 export interface RiskUncertainty {
-  lifetimeRiskPercent: number;
-  ciLow: number;
-  ciHigh: number;
+  /** Primary output — relative risk point estimate */
+  relativeRisk: number;
+  relativeRiskCiLow: number;
+  relativeRiskCiHigh: number;
   confidenceScore: number;
   prsCoverage: number;
   ancestryConfidence: number;
   method: string;
+  /** @deprecated Use relativeRisk — kept for share payload compat */
+  lifetimeRiskPercent?: number;
+  ciLow?: number;
+  ciHigh?: number;
 }
 
 export interface AbsoluteRiskBreakdown {
   cancerType?: CancerType;
+  /** SEER-scale population prior — informational only */
   baselineLifetimeRisk: number;
-  /** exp(log RR) — display only; do not multiply with other factors */
+  /** Primary measured+modeled output: exp(log RR) */
   rrTotal: number;
+  relativeRisk: number;
   logRelativeRisk: number;
+  literatureBetaPrs?: number;
   logComponents?: {
     prs: number;
     familyHistory: number;
@@ -56,15 +68,29 @@ export interface AbsoluteRiskBreakdown {
     ancestry: number;
     clinicalPrior: number;
   };
+  /** Population baseline % — NOT personalized absolute risk */
+  populationBaselineLifetimePercent: number;
+  /** @deprecated Personalized absolute risk disabled */
   absoluteLifetimeRisk: number;
+  /** @deprecated Alias of populationBaselineLifetimePercent when absolute risk disabled */
   absoluteLifetimeRiskPercent: number;
   uncertainty?: RiskUncertainty;
   method: string;
+  outputMode?: "relative_risk_only";
+  referenceCalibrationStatus?: ReferenceCalibrationStatus;
+  referenceWarnings?: string[];
+  validityNote?: string;
+  absoluteRiskDisabled?: boolean;
 }
 
 export interface PopulationCancerRisk {
   cancerType: CancerType;
   label: string;
+  /** Relative risk vs reference (primary genetic output) */
+  relativeRisk: number;
+  /** SEER population lifetime % — context only, not personalized probability */
+  populationBaselineLifetimePercent: number;
+  /** @deprecated Use populationBaselineLifetimePercent + relativeRisk */
   lifetimeRiskPercent: number;
   riskBand: RiskTier;
   percentileLow: number;
@@ -77,6 +103,8 @@ export interface PopulationCancerRisk {
   absoluteRisk?: AbsoluteRiskBreakdown;
   uncertainty?: RiskUncertainty;
   clinicalModel?: string;
+  referenceCalibrationStatus?: ReferenceCalibrationStatus;
+  referenceWarnings?: string[];
 }
 
 export interface PathogenicFinding {
@@ -148,8 +176,8 @@ export interface PrsComputationResult {
   cancerType: CancerType;
   name: string;
   rawScore: number;
-  zScore: number;
-  percentile: number;
+  zScore: number | null;
+  percentile: number | null;
   riskTier: RiskTier;
   variantsUsed: number;
   variantsTotal: number;
@@ -162,6 +190,8 @@ export interface PrsComputationResult {
   calibrationMethod?: string;
   referenceSource?: string;
   referenceNIndividuals?: number;
+  referenceCalibrationStatus?: ReferenceCalibrationStatus;
+  referenceWarnings?: string[];
 }
 
 export interface RiskStory {

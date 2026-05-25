@@ -1,37 +1,34 @@
 {
-  "architecture": "four_level_public_stack",
+  "architecture": "three_layer_production_stack",
   "path": "research_grade_honesty",
+  "validity_mode": {
+    "ABSOLUTE_RISK": "disabled",
+    "SYNTHETIC_CALIBRATION": false,
+    "CLINICAL_EQUIVALENCE": false
+  },
   "levels": [
     {
       "level": 1,
-      "name": "PRS construction",
-      "sources": [
-        "PGS Catalog",
-        "OpenGWAS",
-        "GWAS Catalog"
-      ]
+      "name": "Genetics — PRS construction",
+      "sources": ["PGS Catalog", "OpenGWAS provenance", "GWAS Catalog"]
     },
     {
       "level": 2,
-      "name": "Ancestry-aware reference",
-      "sources": [
-        "1000 Genomes Phase 3"
-      ]
+      "name": "Normalization — 1000 Genomes Z-score",
+      "sources": ["1000 Genomes Phase 3"],
+      "notes": "Strict ancestry match; no mixture fallback"
     },
     {
       "level": 3,
-      "name": "Baseline incidence",
-      "sources": [
-        "SEER"
-      ]
-    },
-    {
-      "level": 4,
-      "name": "Pseudo calibration",
-      "sources": [
-        "Literature HR/SD + synthetic cohort fit"
-      ],
-      "method": "synthetic_cohort_calibration"
+      "name": "Interpretation — literature relative risk",
+      "sources": ["Published HR per SD PRS"],
+      "formula": "log(RR)_PRS = ln(HR/SD) * Z"
     }
-  ]
+  ],
+  "informational_only": {
+    "seer_population_baseline_percent": "Not used in personalized probability"
+  },
+  "demo_only": {
+    "synthetic_cohort_calibration": "genomics-pipeline/calibration/ — disabled in app outputs"
+  }
 }

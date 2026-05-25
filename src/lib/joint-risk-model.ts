@@ -3,17 +3,22 @@
  *
  *   log(RR) = β_PRS·Z_PRS + β_FH·FH + β_ancestry·X_anc + β_age·X_age + clinical_log_prior
  *   RR = exp(log(RR))
- *   P = 1 − (1 − R_base)^RR   (Chatterjee absolute risk mapping)
+ *   Personalized absolute risk P = 1−(1−R_base)^RR is DISABLED (validity-config).
  *
  * Do NOT multiply RR_PRS × RR_FH × RR_clinical — that is statistically invalid stacking.
  */
 
 import { baselineFor } from "./epidemiology-baselines";
-import { syntheticPrsLogRelativeRisk } from "./synthetic-calibration";
+import {
+  computeProductionLogRelativeRisk,
+  logRelativeRiskToRr,
+} from "./risk-engine/core/literature-relative-risk";
+import { VALIDITY_MODE } from "./validity-config";
 import type {
   AncestryGroup,
   CancerType,
   FamilyHistoryInput,
+  ReferenceCalibrationStatus,
   UserProfile,
 } from "./types";
 import type { AncestryProportions } from "./ancestry-inference";
@@ -24,8 +29,9 @@ export interface JointRiskInput {
   zScore?: number;
   matchRate?: number;
   ancestryProportions?: AncestryProportions;
-  /** 1000G panel used for PRS Z (Level 2 → Level 4 calibration) */
+  /** 1000G panel used for PRS Z (Level 2) */
   referencePopulation?: string;
+  referenceCalibrationStatus?: ReferenceCalibrationStatus;
   /** Profile mode: additive log-RR from external clinical model (Gail/TC/PREMM5), not multiplied */
   clinicalLogPrior?: number;
   clinicalModelLabel?: string;
@@ -38,11 +44,6 @@ export interface LogRiskComponents {
   ancestry: number;
   clinicalPrior: number;
   total: number;
-}
-
-/** ln(HR) per 1 SD — equals β_PRS in log-linear spec */
-function betaPrsPerSd(cancer: CancerType): number {
-  return Math.log(baselineFor(cancer).hazardRatioPerSd);
 }
 
 /** Additive FH terms on log-risk scale (not multiplicative RR) */
@@ -124,50 +125,26 @@ export function encodeAncestryLog(
   return logRr;
 }
 
+/** Production log-risk — delegates to core (literature β only). */
 export function computeLogRelativeRisk(input: JointRiskInput): LogRiskComponents {
-  let prs = 0;
-  if (input.zScore !== undefined) {
-    const syn = syntheticPrsLogRelativeRisk(
-      input.cancerType,
-      input.zScore,
-      input.referencePopulation,
-    );
-    prs =
-      syn !== undefined
-        ? syn
-        : betaPrsPerSd(input.cancerType) * input.zScore;
-  }
-
-  const familyHistory =
-    input.clinicalLogPrior !== undefined
-      ? 0
-      : encodeFamilyHistoryLog(
-          input.cancerType,
-          input.profile?.familyHistory,
-        );
-
-  const age = encodeAgeLog(input.profile?.age);
-  const ancestry = encodeAncestryLog(
-    input.cancerType,
-    input.ancestryProportions,
-  );
-  const clinicalPrior = input.clinicalLogPrior ?? 0;
-
-  const total = prs + familyHistory + age + ancestry + clinicalPrior;
-
-  return { prs, familyHistory, age, ancestry, clinicalPrior, total };
+  return computeProductionLogRelativeRisk(input);
 }
 
-export function logRelativeRiskToRr(logRr: number): number {
-  return Math.exp(Math.max(-5, Math.min(5, logRr)));
-}
+export { logRelativeRiskToRr };
 
+/**
+ * @deprecated Personalized absolute risk disabled (VALIDITY_MODE.ABSOLUTE_RISK).
+ * Returns 0 — use relativeRisk from buildRiskInterpretation instead.
+ */
 export function absoluteRiskFromLogRr(
-  baselineLifetimeRisk: number,
+  _baselineLifetimeRisk: number,
   logRr: number,
 ): number {
-  const rBase = Math.min(0.99, Math.max(0.0001, baselineLifetimeRisk));
+  if (VALIDITY_MODE.ABSOLUTE_RISK === "disabled") {
+    return 0;
+  }
   const rr = logRelativeRiskToRr(logRr);
+  const rBase = Math.min(0.99, Math.max(0.0001, _baselineLifetimeRisk));
   return 1 - Math.pow(1 - rBase, rr);
 }
 

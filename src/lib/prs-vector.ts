@@ -1,5 +1,6 @@
 /**
- * Batched PRS scoring + empirical reference calibration (1000 Genomes–stratified).
+ * Layer 1: PRS_raw = Σ(d_i × β_i)
+ * Layer 2: Z = (PRS_raw - μ_ref) / σ_ref (1000G only; no HWE fallback)
  */
 
 import type {
@@ -11,7 +12,8 @@ import type {
 import type { AncestryGroup } from "./types";
 import { percentileToRiskTier } from "./prs-calculator-utils";
 import { calibratePrsAgainstReference } from "./prs-reference-calibration";
-import { zScoreToPercentile } from "./prs-calculator-utils";
+import { VALIDITY_DISCLAIMERS } from "./validity-config";
+import { logRelativeRiskToRr, literatureBetaPrs } from "./risk-engine/core/literature-relative-risk";
 
 function dosageOfEffectAllele(
   userGenotype: string,
@@ -93,31 +95,33 @@ export function computePrsForScoreVectorized(
     options?.ancestryConfidence ?? (options?.ancestry ? 0.85 : 0.5),
   );
 
-  let percentile: number;
-  let zScore: number;
+  const status = calibrated?.selection.status ?? "uncalibrated_reference_warning";
+  const warnings = calibrated?.selection.warnings ?? [
+    VALIDITY_DISCLAIMERS.uncalibratedReference,
+  ];
+
+  let percentile: number | null = null;
+  let zScore: number | null = null;
   let referencePopulation: string | undefined;
   let calibrationMethod: string | undefined;
   let referenceSource: string | undefined;
   let referenceNIndividuals: number | undefined;
 
-  if (calibrated) {
+  if (
+    calibrated &&
+    calibrated.reference &&
+    calibrated.percentile != null &&
+    calibrated.zScore != null
+  ) {
     percentile = calibrated.percentile;
     zScore = calibrated.zScore;
-    referencePopulation = calibrated.selection.usedMixture
-      ? "MULTI"
-      : calibrated.selection.population;
+    referencePopulation = calibrated.selection.population;
     calibrationMethod = calibrated.reference.calibrationMethod;
     referenceSource = calibrated.reference.source;
     referenceNIndividuals = calibrated.reference.nIndividuals;
-  } else {
-    const { mean, sd } = definition.population;
-    zScore = sd > 0 ? (rawScore - mean) / sd : 0;
-    percentile = zScoreToPercentile(zScore);
-    calibrationMethod = "legacy_hwe";
-    referenceSource = definition.population.source;
   }
 
-  const riskTier = percentileToRiskTier(percentile);
+  const riskTier = percentileToRiskTier(percentile ?? 50);
 
   return {
     pgsId: definition.pgsId,
@@ -134,8 +138,19 @@ export function computePrsForScoreVectorized(
     citation: definition.citation,
     topContributors: contributions.slice(0, 10),
     referencePopulation,
-    calibrationMethod,
+    calibrationMethod: calibrationMethod ?? "uncalibrated_reference_warning",
     referenceSource,
     referenceNIndividuals,
+    referenceCalibrationStatus: status,
+    referenceWarnings: warnings,
   };
+}
+
+/** RR from literature β when Z available */
+export function relativeRiskFromPrs(
+  cancer: import("./types").CancerType,
+  zScore: number | null,
+): number | null {
+  if (zScore === null) return null;
+  return logRelativeRiskToRr(literatureBetaPrs(cancer) * zScore);
 }

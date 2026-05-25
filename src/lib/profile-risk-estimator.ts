@@ -35,11 +35,10 @@ function appliesToSex(
   return true;
 }
 
-function tierFromAbsolutePercent(pct: number, baselinePct: number): RiskTier {
-  const ratio = pct / Math.max(baselinePct, 0.1);
-  if (ratio < 0.85) return "low";
-  if (ratio < 1.15) return "average";
-  if (ratio < 1.5) return "moderate";
+function tierFromRelativeRisk(rr: number): RiskTier {
+  if (rr < 0.9) return "low";
+  if (rr < 1.15) return "average";
+  if (rr < 1.5) return "moderate";
   return "high";
 }
 
@@ -113,14 +112,11 @@ function buildProfileCancerReport(
     includeUncertainty: true,
   });
 
-  const tier = tierFromAbsolutePercent(
-    absoluteRisk.absoluteLifetimeRiskPercent,
-    baselinePct,
-  );
+  const tier = tierFromRelativeRisk(absoluteRisk.relativeRisk);
   const central = centralPercentileFromTier(tier);
   const pop = populationFromClinicalModel(
     cancer,
-    absoluteRisk.absoluteLifetimeRiskPercent,
+    absoluteRisk.populationBaselineLifetimePercent,
     clinicalLogPrior,
     tier,
     modelName,
@@ -155,7 +151,7 @@ function buildProfileCancerReport(
     precision: "population",
     population: pop,
     prs: undefined,
-    plainLanguageSummary: `${modelName}: ~${absoluteRisk.absoluteLifetimeRiskPercent}% lifetime (95% CI ${absoluteRisk.uncertainty?.ciLow ?? "?"}–${absoluteRisk.uncertainty?.ciHigh ?? "?"}%). Not from DNA.`,
+    plainLanguageSummary: `${modelName}: relative risk ≈ ${absoluteRisk.relativeRisk.toFixed(2)} (RR CI ${absoluteRisk.uncertainty?.relativeRiskCiLow ?? "?"}–${absoluteRisk.uncertainty?.relativeRiskCiHigh ?? "?"}). Population baseline ~${baselinePct}% lifetime (context only). Not from DNA.`,
     riskStory: buildRiskStoryFromPopulation(pop),
     timeline: buildScreeningTimelineFromTier(cancer, tier, options),
     ancestryConfidence: buildAncestryConfidenceForPopulation(enriched, pop),
