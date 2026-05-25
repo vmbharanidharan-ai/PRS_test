@@ -4,13 +4,9 @@ import { useState } from "react";
 import type { AnalysisResult } from "@/lib/types";
 import { downloadReportPdf } from "@/lib/export-pdf";
 import { ReportInterpreter } from "./ReportInterpreter";
-import { CancerInsightCard } from "./report/CancerInsightCard";
-import { OverallRiskBar } from "./report/OverallRiskBar";
+import { ClinicianResearchSummary } from "./report/ClinicianResearchSummary";
 import { MethodologySection } from "./report/MethodologySection";
 import { ShareReportButton } from "./report/ShareReportButton";
-import { AncestryConfidenceMeter } from "./report/AncestryConfidenceMeter";
-import { ScreeningTimeline } from "./report/ScreeningTimeline";
-import { PathogenicAlert } from "./report/PathogenicAlert";
 
 interface ResultsPageProps {
   result: AnalysisResult;
@@ -20,21 +16,28 @@ interface ResultsPageProps {
 export function ResultsPage({ result, onReset }: ResultsPageProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
 
-  const modeLabel =
-    result.mode === "demo"
-      ? "Demo report"
-      : result.mode === "profile"
-        ? "Profile-based estimate"
-        : result.mode === "shared"
-          ? "Shared report"
-          : "DNA-based insights";
+  const subtitle =
+    result.mode === "dna"
+      ? "Your DNA was modeled — structured research summary below"
+      : result.mode === "demo"
+        ? "Demo data — research summary preview"
+        : result.mode === "profile"
+          ? "Profile-based estimate — research summary preview"
+          : "Shared research summary";
 
   return (
-    <div className="space-y-10" id="genescreen-report">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-8" id="genescreen-report">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-brand-600">{modeLabel}</p>
-          <h1 className="text-2xl font-bold text-slate-900">Your risk insights</h1>
+          <p className="text-sm font-medium text-brand-600">{subtitle}</p>
+          <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
+            GeneScope research summary
+          </h1>
+          <p className="mt-2 max-w-xl text-sm text-slate-600">
+            Download or print this structured summary. It lists modeled polygenic
+            data (PGS Catalog IDs, percentiles, raw metrics) for your own records
+            — not personalized medical advice.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -50,7 +53,7 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
             }}
             className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white"
           >
-            {pdfLoading ? "PDF…" : "Download PDF"}
+            {pdfLoading ? "Preparing PDF…" : "Download PDF summary"}
           </button>
           <ShareReportButton result={result} />
           <button
@@ -63,84 +66,18 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
         </div>
       </div>
 
-      {result.pathogenicScreen && (
-        <PathogenicAlert screen={result.pathogenicScreen} />
-      )}
+      <ClinicianResearchSummary result={result} />
 
-      {result.populationDisclaimer && (
-        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
-          <strong>Important:</strong> {result.populationDisclaimer}
+      <details className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <summary className="cursor-pointer text-sm font-medium text-slate-700">
+          Optional: plain-language explainer (not for clinical decisions)
+        </summary>
+        <div className="mt-4">
+          <ReportInterpreter result={result} />
         </div>
-      )}
-
-      {result.reports.length > 0 && (
-        <>
-      <OverallRiskBar
-        overall={result.overallRisk}
-        precisionLevel={result.precisionLevel}
-      />
-
-      <section>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Section 2 · Cancer breakdown
-        </p>
-        <h2 className="mt-2 text-xl font-bold text-slate-900">By cancer type</h2>
-        <div className="mt-4 grid gap-6 lg:grid-cols-2">
-          {result.reports.map((report) => (
-            <CancerInsightCard key={report.cancerType} report={report} />
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border bg-white p-6 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-          Section 3 · Context
-        </p>
-        <h2 className="mt-2 text-xl font-bold text-slate-900">
-          How to interpret this report
-        </h2>
-
-        {result.familyHistorySummary && result.familyHistorySummary.length > 0 && (
-          <div className="mt-4 rounded-lg bg-violet-50 p-4">
-            <p className="text-sm font-semibold text-violet-900">Family history</p>
-            <ul className="mt-2 list-disc pl-5 text-sm text-violet-950">
-              {result.familyHistorySummary.map((l, i) => (
-                <li key={i}>{l}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          {result.reports.slice(0, 2).map((r) => (
-            <AncestryConfidenceMeter key={r.cancerType} confidence={r.ancestryConfidence} />
-          ))}
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-sm font-semibold text-slate-800">Limitations</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-600">
-            {result.reports[0]?.limitations.map((l, i) => (
-              <li key={i}>{l}</li>
-            ))}
-            <li>Educational genetic information — not medical guidance.</li>
-          </ul>
-        </div>
-
-        {result.reports[0] && (
-          <div className="mt-6">
-            <ScreeningTimeline items={result.reports[0].timeline} />
-          </div>
-        )}
-      </section>
-
-      <ReportInterpreter result={result} />
-        </>
-      )}
+      </details>
 
       <MethodologySection precisionLevel={result.precisionLevel} />
-
-      <footer className="text-xs text-slate-500">{result.globalDisclaimer}</footer>
     </div>
   );
 }

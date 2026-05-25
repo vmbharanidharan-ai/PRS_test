@@ -43,8 +43,9 @@ export function populationFromPrs(
     zScore: prs.zScore,
     matchRate: prs.matchRate,
     profile: enriched,
+    referencePopulation: prs.referencePopulation,
     method: genetic
-      ? "Log-linear joint model: log(RR)=β·Z+FH+age+ancestry; P=1−(1−R_base)^RR"
+      ? "Four-level: PGS+OpenGWAS → 1KG ref → SEER R_base → synthetic cohort calibration"
       : "Population prior",
     includeUncertainty: true,
   });

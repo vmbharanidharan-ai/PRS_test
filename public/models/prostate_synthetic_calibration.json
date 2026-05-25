@@ -1,0 +1,78 @@
+{
+  "cancer": "prostate",
+  "pgs_id": "PGS000662",
+  "version": "synthetic_cohort_v1",
+  "path": "research_grade_honesty",
+  "method": "synthetic_cohort_calibration",
+  "calibration": "synthetic_pseudo_calibration",
+  "clinically_valid": false,
+  "disclaimer": "Synthetic cohort calibration: NOT fitted on real UK Biobank or FinnGen longitudinal outcomes. Internally consistent for educational demos and methodology papers only. No clinical implication.",
+  "literature_anchor": {
+    "hr_per_sd": 1.5,
+    "beta_prs_ln_hr": 0.405465,
+    "source": "UK Biobank translational PRS literature (Lewis 2021; cancer GWAS)",
+    "option": "A_literature_anchor"
+  },
+  "populations": {
+    "EUR": {
+      "population": "EUR",
+      "reference_mean": 25.281993,
+      "reference_sd": 1.010128,
+      "reference_method": "af_monte_carlo_bootstrap",
+      "literature_beta_prs": 0.405465,
+      "literature_hr_per_sd": 1.5,
+      "synthetic_intercept_log_odds": -1.984999,
+      "synthetic_slope_log_odds": 0.405015,
+      "synthetic_prevalence_target": 0.125,
+      "synthetic_n_simulated": 20000,
+      "slope_ratio_fitted_vs_literature": 0.9989
+    },
+    "AFR": {
+      "population": "AFR",
+      "reference_mean": 25.971728,
+      "reference_sd": 1.069797,
+      "reference_method": "af_monte_carlo_bootstrap",
+      "literature_beta_prs": 0.405465,
+      "literature_hr_per_sd": 1.5,
+      "synthetic_intercept_log_odds": -1.969577,
+      "synthetic_slope_log_odds": 0.415835,
+      "synthetic_prevalence_target": 0.125,
+      "synthetic_n_simulated": 20000,
+      "slope_ratio_fitted_vs_literature": 1.0256
+    },
+    "EAS": {
+      "population": "EAS",
+      "reference_mean": 24.384896,
+      "reference_sd": 1.06003,
+      "reference_method": "af_monte_carlo_bootstrap",
+      "literature_beta_prs": 0.405465,
+      "literature_hr_per_sd": 1.5,
+      "synthetic_intercept_log_odds": -1.944042,
+      "synthetic_slope_log_odds": 0.416831,
+      "synthetic_prevalence_target": 0.125,
+      "synthetic_n_simulated": 20000,
+      "slope_ratio_fitted_vs_literature": 1.028
+    }
+  },
+  "default_population": "EUR",
+  "default_intercept_log_rr": -1.984999,
+  "default_slope_log_rr": 0.405015,
+  "data_layers": {
+    "level_1_prs": "PGS Catalog + OpenGWAS (GWAS provenance)",
+    "level_2_reference": "1000 Genomes Phase 3 (empirical PRS distribution)",
+    "level_3_baseline": "SEER-scale lifetime incidence",
+    "level_4_calibration": "Synthetic cohort (this file)"
+  },
+  "references": [
+    "Chatterjee et al. Nat Rev Genet 2016",
+    "Lewis et al. Hum Genet Genomics Adv 2021",
+    "1000 Genomes Phase 3 reference panels",
+    "SEER Cancer Stat Facts"
+  ],
+  "notes": [
+    "Option B: PRS Z sampled from reference mean/sd; pseudo phenotypes from published hazard; logistic fit.",
+    "Option A: literature HR/SD anchors simulation generative model.",
+    "Blocked resource: labeled longitudinal genotype cohorts (UKB/FinnGen) \u2014 not replaced, explicitly synthetic.",
+    "Upgrade: fit_ukbb_models.py when controlled-access phenotypes available."
+  ]
+}

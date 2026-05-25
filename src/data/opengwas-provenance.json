@@ -1,0 +1,52 @@
+{
+  "level": 1,
+  "title": "PRS construction provenance",
+  "sources": [
+    {
+      "name": "PGS Catalog",
+      "url": "https://www.pgscatalog.org/",
+      "role": "Bundled LD-clumped SNP weights (\u03b2) for runtime scoring"
+    },
+    {
+      "name": "OpenGWAS",
+      "url": "https://gwas.mrcieu.ac.uk/",
+      "role": "Harmonized GWAS summary statistics underlying many PGS builds"
+    },
+    {
+      "name": "GWAS Catalog",
+      "url": "https://www.ebi.ac.uk/gwas/",
+      "role": "Study metadata and trait associations"
+    }
+  ],
+  "scores": {
+    "breast": {
+      "pgsId": "PGS005104",
+      "trait": "Breast cancer",
+      "gwasCatalog": "https://www.ebi.ac.uk/gwas/",
+      "opengwas": "https://gwas.mrcieu.ac.uk/",
+      "notes": "Jia et al. Nat Genet 2024 breast cancer GWAS; PGS Catalog LD-clumped score."
+    },
+    "colorectal": {
+      "pgsId": "PGS004240",
+      "trait": "Colorectal cancer",
+      "gwasCatalog": "https://www.ebi.ac.uk/gwas/",
+      "opengwas": "https://gwas.mrcieu.ac.uk/",
+      "notes": "Fan et al. Int J Cancer 2023; PGS Catalog."
+    },
+    "prostate": {
+      "pgsId": "PGS000662",
+      "trait": "Prostate cancer",
+      "gwasCatalog": "https://www.ebi.ac.uk/gwas/",
+      "opengwas": "https://gwas.mrcieu.ac.uk/",
+      "notes": "Conti et al. Nat Genet 2021; PGS Catalog."
+    },
+    "ovarian": {
+      "pgsId": "PGS000048",
+      "trait": "Ovarian cancer",
+      "gwasCatalog": "https://www.ebi.ac.uk/gwas/",
+      "opengwas": "https://gwas.mrcieu.ac.uk/",
+      "notes": "PGS Catalog curated ovarian score."
+    }
+  },
+  "disclaimer": "GeneScope does not redistribute full OpenGWAS summary stats; only PGS Catalog weights are bundled."
+}

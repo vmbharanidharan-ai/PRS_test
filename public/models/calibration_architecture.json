@@ -1,0 +1,37 @@
+{
+  "architecture": "four_level_public_stack",
+  "path": "research_grade_honesty",
+  "levels": [
+    {
+      "level": 1,
+      "name": "PRS construction",
+      "sources": [
+        "PGS Catalog",
+        "OpenGWAS",
+        "GWAS Catalog"
+      ]
+    },
+    {
+      "level": 2,
+      "name": "Ancestry-aware reference",
+      "sources": [
+        "1000 Genomes Phase 3"
+      ]
+    },
+    {
+      "level": 3,
+      "name": "Baseline incidence",
+      "sources": [
+        "SEER"
+      ]
+    },
+    {
+      "level": 4,
+      "name": "Pseudo calibration",
+      "sources": [
+        "Literature HR/SD + synthetic cohort fit"
+      ],
+      "method": "synthetic_cohort_calibration"
+    }
+  ]
+}

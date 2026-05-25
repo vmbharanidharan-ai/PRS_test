@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { DataModeSelector } from "@/components/consent/DataModeSelector";
+import { DnaReportUnlockGate } from "@/components/consent/DnaReportUnlockGate";
 import { DnaUploadFlow } from "@/components/home/DnaUploadFlow";
+import {
+  clearDnaReportAcknowledgement,
+  hasDnaReportAcknowledgement,
+} from "@/lib/dna-disclaimer";
 import { HomeEntry } from "@/components/home/HomeEntry";
 import { ProfileBuilder } from "@/components/home/ProfileBuilder";
 import { ResultsPage } from "@/components/ResultsPage";
@@ -17,6 +22,7 @@ type Screen = "home" | "demo" | "upload" | "profile";
 export default function HomePage() {
   const [dataModeReady, setDataModeReady] = useState<boolean | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
+  const [dnaReportUnlocked, setDnaReportUnlocked] = useState(false);
   const {
     result,
     loading,
@@ -46,10 +52,29 @@ export default function HomePage() {
 
   const goHome = () => {
     reset();
+    clearDnaReportAcknowledgement();
+    setDnaReportUnlocked(false);
     setScreen("home");
   };
 
   if (result) {
+    const needsDnaGate =
+      result.mode === "dna" &&
+      !dnaReportUnlocked &&
+      !hasDnaReportAcknowledgement();
+
+    if (needsDnaGate) {
+      return (
+        <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+          <DisclaimerBanner />
+          <DnaReportUnlockGate
+            onUnlock={() => setDnaReportUnlocked(true)}
+            onCancel={goHome}
+          />
+        </main>
+      );
+    }
+
     return (
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <DisclaimerBanner />

@@ -25,6 +25,10 @@ import {
 } from "./joint-risk-model";
 import { seerBaselineLifetimeRisk } from "./seer-baseline";
 import { loadCoefficientsSync, type CoxModelCoefficients } from "./cox-coefficients";
+import {
+  loadSyntheticCalibration,
+  syntheticPrsLogRelativeRisk,
+} from "./synthetic-calibration";
 import { bootstrapAbsoluteRiskUncertainty } from "./uncertainty";
 import type { AbsoluteRiskBreakdown, FamilyHistoryInput, UserProfile } from "./types";
 import type { CancerType } from "./types";
@@ -60,10 +64,17 @@ function encodeFhFeatures(
 function logRrFromCox(
   cox: CoxModelCoefficients,
   features: Record<string, number>,
+  options?: { prsLogOverride?: number },
 ): { logRr: number; components: Record<string, number> } {
   const components: Record<string, number> = {};
   let logRr = 0;
   for (const [name, beta] of Object.entries(cox.coefficients)) {
+    if (name === "prs" && options?.prsLogOverride !== undefined) {
+      const term = options.prsLogOverride;
+      if (term !== 0) components.prs = term;
+      logRr += term;
+      continue;
+    }
     const v = features[name] ?? 0;
     const term = beta * v;
     if (term !== 0) components[name] = term;
@@ -101,9 +112,14 @@ export function buildAbsoluteRiskBreakdown(
   input: JointRiskInput & { method?: string; includeUncertainty?: boolean },
 ): AbsoluteRiskBreakdown {
   const cox = loadCoefficientsSync(input.cancerType);
+  const syntheticCal = loadSyntheticCalibration(input.cancerType);
   const methodLabel =
     input.method ??
-    (cox ? `Cox model (${cox.version})` : "Joint log-risk (legacy fallback)");
+    (syntheticCal && cox
+      ? `Four-level stack: ${syntheticCal.version} + Cox FH/age (${cox.version})`
+      : cox
+        ? `Cox model (${cox.version})`
+        : "Joint log-risk (legacy fallback)");
 
   let logRelativeRisk: number;
   let logComponents: AbsoluteRiskBreakdown["logComponents"];
@@ -111,7 +127,17 @@ export function buildAbsoluteRiskBreakdown(
 
   if (cox && !input.clinicalLogPrior) {
     const features = buildFeatureVector(input, cox);
-    const { logRr, components } = logRrFromCox(cox, features);
+    const prsLogOverride =
+      input.zScore !== undefined
+        ? syntheticPrsLogRelativeRisk(
+            input.cancerType,
+            input.zScore,
+            input.referencePopulation,
+          )
+        : undefined;
+    const { logRr, components } = logRrFromCox(cox, features, {
+      prsLogOverride,
+    });
     logRelativeRisk = logRr;
     logComponents = {
       prs: components.prs ?? 0,

@@ -59,6 +59,11 @@ export function DnaUploadFlow({
     return (
       <div className="rounded-2xl border bg-white p-8 shadow-sm">
         <h2 className="text-xl font-bold">Upload your DNA file</h2>
+        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-950">
+          After analysis, you must confirm required safety statements before any
+          report unlocks. The output is a structured research summary — not a
+          personal risk diagnosis.
+        </p>
         <div className="mt-4 flex gap-2">
           {(["23andme", "ancestry"] as const).map((v) => (
             <button
@@ -221,7 +226,7 @@ export function DnaUploadFlow({
             onClick={() => file && onUpload(file, opts())}
             className="flex-1 rounded-lg bg-brand-600 py-2 text-sm font-medium text-white"
           >
-            Get my DNA-based insights
+            Analyze my DNA (acknowledgement required next)
           </button>
         )}
       </div>

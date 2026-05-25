@@ -2,14 +2,24 @@
 
 UK Biobank is used only as a **conceptual calibration standard**. This app does **not** assume access to UKB individual-level data.
 
-We compose signal from **three public layers**:
+We compose signal from **four public layers** (Path A — research-grade honesty). See [CALIBRATION_FRAMEWORK.md](./CALIBRATION_FRAMEWORK.md).
+
+| Level | Source | Role |
+|-------|--------|------|
+| 1 | PGS Catalog + OpenGWAS provenance | PRS weights β |
+| 2 | 1000 Genomes | Empirical percentile / Z |
+| 3 | SEER | Baseline R_base |
+| 4 | Synthetic cohort calibration | Pseudo intercept/slope (not UKB-fitted) |
+
+Legacy three-layer summary:
 
 ## Layer 1 — PRS genetics (SNP weights)
 
 | Source | Role |
 |--------|------|
 | [PGS Catalog](https://www.pgscatalog.org/) | LD-clumped scoring files bundled in `src/data/prs/` |
-| [GWAS Catalog](https://www.ebi.ac.uk/gwas/) | Provenance for trait associations |
+| [OpenGWAS](https://gwas.mrcieu.ac.uk/) | Harmonized GWAS provenance (`src/data/opengwas-provenance.json`) |
+| [GWAS Catalog](https://www.ebi.ac.uk/gwas/) | Study metadata for trait associations |
 | PRS-CS / LDpred2 (optional) | `genomics-pipeline/prs/` — LD-aware reweighting |
 
 **Cannot do from GWAS alone:** individual genotypes, cohort-specific Cox fitting.
@@ -23,7 +33,21 @@ We compose signal from **three public layers**:
 
 **NHANES + SEER:** good for demographic baseline hazard; **not** PRS training (limited GWAS in NHANES).
 
-## Layer 3 — Cox coefficients (log-risk \(\beta\))
+## Layer 4 — Synthetic pseudo-calibration
+
+| Source | Role |
+|--------|------|
+| Published HR per SD (Option A) | Anchors generative hazard model |
+| 1000G-scaled PRS simulation (Option B) | Fit intercept/slope on pseudo cohort |
+| `public/models/{cancer}_synthetic_calibration.json` | Runtime Level 4 in `synthetic-calibration.ts` |
+
+```bash
+npm run build-synthetic-calibration
+```
+
+**Not clinically valid** — internally consistent for demos and methodology papers.
+
+## Layer 3b — Cox coefficients (log-risk \(\beta\)) for FH/age
 
 | Source | Role |
 |--------|------|

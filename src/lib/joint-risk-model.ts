@@ -9,6 +9,7 @@
  */
 
 import { baselineFor } from "./epidemiology-baselines";
+import { syntheticPrsLogRelativeRisk } from "./synthetic-calibration";
 import type {
   AncestryGroup,
   CancerType,
@@ -23,6 +24,8 @@ export interface JointRiskInput {
   zScore?: number;
   matchRate?: number;
   ancestryProportions?: AncestryProportions;
+  /** 1000G panel used for PRS Z (Level 2 → Level 4 calibration) */
+  referencePopulation?: string;
   /** Profile mode: additive log-RR from external clinical model (Gail/TC/PREMM5), not multiplied */
   clinicalLogPrior?: number;
   clinicalModelLabel?: string;
@@ -122,10 +125,18 @@ export function encodeAncestryLog(
 }
 
 export function computeLogRelativeRisk(input: JointRiskInput): LogRiskComponents {
-  const prs =
-    input.zScore !== undefined
-      ? betaPrsPerSd(input.cancerType) * input.zScore
-      : 0;
+  let prs = 0;
+  if (input.zScore !== undefined) {
+    const syn = syntheticPrsLogRelativeRisk(
+      input.cancerType,
+      input.zScore,
+      input.referencePopulation,
+    );
+    prs =
+      syn !== undefined
+        ? syn
+        : betaPrsPerSd(input.cancerType) * input.zScore;
+  }
 
   const familyHistory =
     input.clinicalLogPrior !== undefined

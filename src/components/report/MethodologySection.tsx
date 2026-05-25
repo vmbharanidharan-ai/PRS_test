@@ -21,10 +21,12 @@ export function MethodologySection({
         )}
         {(precisionLevel === "genetic" || precisionLevel === "demo") && (
           <p>
-            <strong>DNA mode:</strong> PGS Catalog weights → raw PRS → empirical
-            percentile within ancestry reference panel (1000 Genomes EUR/AFR/EAS).
-            No Hardy–Weinberg Gaussian CDF. RR<sub>PRS</sub> from empirical Z;
-            absolute risk via Chatterjee joint model. Pathogenic screen runs first.
+            <strong>Four-level stack (Path A — research honesty):</strong> (1) PGS
+            Catalog + OpenGWAS provenance → raw PRS; (2) 1000 Genomes reference →
+            percentile/Z; (3) SEER baseline R<sub>base</sub>; (4) synthetic cohort
+            pseudo-calibration (literature HR/SD + simulated outcomes — not UKB
+            longitudinal data). Absolute risk: P = 1 − (1 − R<sub>base</sub>
+            )<sup>RR</sup>. Not clinically validated.
           </p>
         )}
         <p>

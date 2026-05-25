@@ -19,7 +19,7 @@ We are upgrading GeneScope from **heuristic PRS approximation** to a **cohort-ca
 Genotype (browser or server)
     → PRS-CS / LDpred2 / PLINK score (prs/)
     → 1000G PCA ancestry (ancestry/)
-    → Literature-calibrated Cox (models/) — PGS + SEER + published HRs
+    → Four-level stack: PGS/OpenGWAS → 1KG ref → SEER → synthetic calibration
     → calibration + metrics (evaluation/)
     → existing report generator (unchanged UI)
 ```
@@ -30,6 +30,7 @@ Genotype (browser or server)
 genomics-pipeline/
   ancestry/          build_1kg_reference.sh, pca_1000g.py, project_samples.py
   prs/               ldscore_pipeline.py, prs_cs_runner.py, ld_pred2_runner.py
+  calibration/       synthetic_cohort_calibration.py, opengwas_provenance.py
   models/            literature_cox_models.py, cox_models.py, fit_ukbb_models.py
   evaluation/        calibration.py, metrics.py, plots.py
   data/              1000g/, ukbb_summary_stats/ (not committed — large)
