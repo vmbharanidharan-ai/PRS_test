@@ -4,8 +4,11 @@ import { useState } from "react";
 import type { AnalysisResult } from "@/lib/types";
 import { downloadReportPdf } from "@/lib/export-pdf";
 import { ReportInterpreter } from "./ReportInterpreter";
+import { CancerInsightCard } from "./report/CancerInsightCard";
 import { ClinicianResearchSummary } from "./report/ClinicianResearchSummary";
 import { MethodologySection } from "./report/MethodologySection";
+import { OverallRiskBar } from "./report/OverallRiskBar";
+import { PathogenicAlert } from "./report/PathogenicAlert";
 import { ShareReportButton } from "./report/ShareReportButton";
 
 interface ResultsPageProps {
@@ -34,9 +37,9 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
             GeneScope research summary
           </h1>
           <p className="mt-2 max-w-xl text-sm text-slate-600">
-            Download or print this structured summary. It lists modeled polygenic
-            data (PGS Catalog IDs, percentiles, raw metrics) for your own records
-            — not personalized medical advice.
+            Primary outputs: relative risk (RR) and PRS percentile vs a matched
+            1000 Genomes reference. Population baseline % is context only — not
+            your personal lifetime probability.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -65,6 +68,40 @@ export function ResultsPage({ result, onReset }: ResultsPageProps) {
           </button>
         </div>
       </div>
+
+      {result.pathogenicScreen?.blocksPrsInterpretation && (
+        <PathogenicAlert screen={result.pathogenicScreen} />
+      )}
+
+      {result.reports.length > 0 ? (
+        <>
+          <OverallRiskBar
+            overall={result.overallRisk}
+            precisionLevel={result.precisionLevel}
+          />
+
+          <section>
+            <h2 className="text-lg font-bold text-slate-900">By cancer type</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Relative risk and reference percentile — educational only.
+            </p>
+            <div className="mt-4 grid gap-6 lg:grid-cols-2">
+              {result.reports.map((report) => (
+                <CancerInsightCard key={report.cancerType} report={report} />
+              ))}
+            </div>
+          </section>
+        </>
+      ) : (
+        <div className="rounded-xl border-2 border-amber-300 bg-amber-50 p-6 text-sm text-amber-950">
+          <p className="font-semibold">No polygenic cancer blocks in this report</p>
+          <p className="mt-2">
+            {result.pathogenicScreen?.blocksPrsInterpretation
+              ? "A pathogenic proxy signal was detected — PRS results are withheld. Follow clinical guidance in the alert above."
+              : "Analysis completed but no cancer PRS blocks were generated. Try again with a full raw genotype file and a specific ancestry (European, African, or East Asian) for 1000 Genomes calibration."}
+          </p>
+        </div>
+      )}
 
       <ClinicianResearchSummary result={result} />
 

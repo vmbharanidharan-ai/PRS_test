@@ -27,7 +27,7 @@ export function DnaUploadFlow({
   const [file, setFile] = useState<File | null>(null);
   const [sex, setSex] = useState<"" | "female" | "male">("");
   const [age, setAge] = useState("");
-  const [ancestry, setAncestry] = useState<AncestryGroup>("unknown");
+  const [ancestry, setAncestry] = useState<AncestryGroup>("european");
   const [fhStep, setFhStep] = useState(0);
   const [fhDraft, setFhDraft] = useState<FamilyHistoryDraft>({ enabled: true });
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,8 +35,9 @@ export function DnaUploadFlow({
   const opts = (): AnalysisOptions => ({
     sex: sex || undefined,
     age: age ? parseInt(age, 10) : undefined,
-    ancestry: ancestry === "unknown" ? undefined : ancestry,
-    ancestryConfidence: ancestry === "unknown" ? 0.5 : 0.85,
+    ancestry,
+    ancestryConfidence:
+      ancestry === "unknown" || ancestry === "other" ? 0.5 : 0.9,
     familyHistory: draftToFamilyHistory(fhDraft),
   });
 

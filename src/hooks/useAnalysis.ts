@@ -81,14 +81,30 @@ export function useAnalysis() {
           new Promise((r) => setTimeout(r, 1200)),
           fetch(DEMO_ZIP_URL),
         ]);
-        if (!res.ok) throw new Error("Could not load sample genome");
+        if (!res.ok) {
+          throw new Error(
+            "Could not load sample genome. Run: npm run generate-test-data (needs public/test-data/synthetic-23andme-raw.zip).",
+          );
+        }
         const blob = await res.blob();
         const file = new File([blob], "synthetic-23andme-raw.zip", {
           type: "application/zip",
         });
         const text = await readGenotypeFileContent(file);
         const parsed = parseGenotypeFile(text);
-        setResult(runParsed(parsed, options, "demo"));
+        setResult(
+          runParsed(
+            parsed,
+            {
+              sex: "female",
+              age: 45,
+              ancestry: "european",
+              ancestryConfidence: 0.9,
+              ...options,
+            },
+            "demo",
+          ),
+        );
       } catch (e) {
         setError(e instanceof Error ? e.message : "Demo failed");
       } finally {

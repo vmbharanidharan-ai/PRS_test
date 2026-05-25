@@ -98,7 +98,12 @@ export default function HomePage() {
   }
 
   if (dataModeReady === null) {
-    return null;
+    return (
+      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <DisclaimerBanner />
+        <p className="text-center text-sm text-slate-500">Loading…</p>
+      </main>
+    );
   }
 
   return (

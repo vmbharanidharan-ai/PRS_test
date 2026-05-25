@@ -8,7 +8,7 @@
 import { VALIDITY_MODE } from "../../validity-config";
 
 export function isSyntheticCalibrationEnabled(): boolean {
-  return VALIDITY_MODE.SYNTHETIC_CALIBRATION === true;
+  return VALIDITY_MODE.SYNTHETIC_CALIBRATION;
 }
 
 /** Throws if called while production flag is off */

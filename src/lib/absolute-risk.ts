@@ -4,6 +4,7 @@
  */
 
 export {
+  buildRiskInterpretation,
   buildAbsoluteRiskBreakdown,
   absoluteLifetimeRisk,
   rrFromPrsZ,
