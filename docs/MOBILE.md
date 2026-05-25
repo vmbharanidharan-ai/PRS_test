@@ -43,6 +43,10 @@ npm run cap:android  # opens Android Studio — Run
 | In-app disclaimer | Already shown on launch |
 | TestFlight / Internal testing | Upload via Xcode / Play Console |
 
+## AI explainer on mobile
+
+The optional LLM interpreter uses `/api/interpret` and is **not included** in the static Capacitor bundle. Native apps still show PRS reports; users can use the hosted web app for AI explanation, or you can add a backend URL later.
+
 ## Troubleshooting
 
 - **Blank WebView:** Run `npm run cap:sync` again; confirm `out/index.html` exists.

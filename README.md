@@ -155,6 +155,25 @@ Full steps: **[docs/MOBILE.md](docs/MOBILE.md)**.
 
 After analysis, use **Download PDF** on the report screen. Generated client-side via `jspdf` (no server).
 
+## AI explainer (optional, informational only)
+
+After your report, expand **Understand your results** for a plain-language explanation of what PRS percentiles mean.
+
+| Property | Detail |
+|----------|--------|
+| **Purpose** | Education only — not diagnosis, not “what you should do” |
+| **Data sent** | Summary stats only (percentiles, tiers) — **never raw DNA** |
+| **Recommendations** | Blocked in system prompt + output filter |
+| **Requires** | Server with `OPENAI_API_KEY` (`npm run dev` or Vercel) |
+
+```bash
+cp .env.example .env.local
+# Add OPENAI_API_KEY=sk-...
+npm run dev
+```
+
+Not available in `build:mobile` / Capacitor static export (no API routes). The main report still works offline.
+
 ## Family history (optional)
 
 Users can expand **Family history (optional)** on the upload form. If skipped, the report uses PRS + sex/age only. If completed, extra NCCN-oriented notes are appended per cancer type (does not replace genetic testing for BRCA/Lynch).

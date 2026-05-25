@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { AnalysisResult } from "@/lib/types";
 import { downloadReportPdf } from "@/lib/export-pdf";
+import { ReportInterpreter } from "./ReportInterpreter";
 import { RiskBadge } from "./RiskBadge";
 
 interface ReportViewProps {
@@ -144,6 +145,8 @@ export function ReportView({ result, onReset }: ReportViewProps) {
           </article>
         ))}
       </div>
+
+      <ReportInterpreter result={result} />
 
       <footer className="rounded-xl border border-slate-200 bg-slate-50 p-6 text-xs leading-relaxed text-slate-600">
         {result.globalDisclaimer}
