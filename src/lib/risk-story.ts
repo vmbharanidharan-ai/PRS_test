@@ -1,5 +1,6 @@
 import type {
   CancerType,
+  PopulationCancerRisk,
   PrsComputationResult,
   RiskStory,
   RiskTier,
@@ -78,4 +79,17 @@ function plainMeaningFor(
         : `At the ${percentile}th percentile, this is within a typical range for the reference population.`;
 
   return `${tierNote} ${cancerNote[cancer]} ${base}`;
+}
+
+export function buildRiskStoryFromPopulation(pop: PopulationCancerRisk): RiskStory {
+  const tier = pop.riskBand;
+  return {
+    headline: pop.likelihoodLabel,
+    lifetimeFraming: `Estimated lifetime risk in the U.S. general population for this cancer type is on the order of ${pop.lifetimeRiskPercent}% — your demographic-adjusted estimate falls in the "${tier}" band. This is not from your DNA.`,
+    populationComparison: `Where most people with a similar profile fall: approximately the ${pop.percentileLow}th–${pop.percentileHigh}th percentile of polygenic risk (central estimate ~${pop.centralPercentile}th). Wide range reflects missing genetic data.`,
+    plainMeaning:
+      "This is a population-based estimate using epidemiology and quantitative genetics theory (PRS ~ normal distribution). Upload DNA for a personal polygenic score. Not a diagnosis.",
+    emphasis:
+      tier === "high" ? "attention" : tier === "low" ? "reassuring" : "neutral",
+  };
 }

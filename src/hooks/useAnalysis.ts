@@ -2,8 +2,12 @@
 
 import { useCallback, useState } from "react";
 import { parseGenotypeFile } from "@/lib/genotype-parser";
-import { runAnalysis } from "@/lib/report-generator";
-import type { AnalysisResult, FamilyHistoryInput } from "@/lib/types";
+import { runAnalysis, runProfileAnalysis } from "@/lib/report-generator";
+import type {
+  AnalysisResult,
+  FamilyHistoryInput,
+  UserProfile,
+} from "@/lib/types";
 
 export interface AnalysisOptions {
   sex?: "female" | "male";
@@ -22,14 +26,14 @@ export function useAnalysis() {
     (
       parsed: ReturnType<typeof parseGenotypeFile>,
       options: AnalysisOptions,
-      mode: "personal" | "demo",
+      mode: "dna" | "demo",
     ) => {
       if (parsed.errors.length > 0 && parsed.variantCount < 1000) {
         throw new Error(parsed.errors[0]);
       }
-      if (mode === "personal" && parsed.variantCount < 100000) {
+      if (mode === "dna" && parsed.variantCount < 100000) {
         throw new Error(
-          `Only ${parsed.variantCount.toLocaleString()} variants found. Raw 23andMe/Ancestry files typically contain 600,000+. You may have uploaded a summary report instead of raw data.`,
+          `Only ${parsed.variantCount.toLocaleString()} variants found. Raw 23andMe/Ancestry files typically contain 600,000+.`,
         );
       }
 
@@ -53,7 +57,7 @@ export function useAnalysis() {
       try {
         const text = await readGenotypeFileContent(file);
         const parsed = parseGenotypeFile(text);
-        setResult(runParsed(parsed, options, "personal"));
+        setResult(runParsed(parsed, options, "dna"));
       } catch (e) {
         setError(e instanceof Error ? e.message : "Analysis failed");
       } finally {
@@ -69,10 +73,9 @@ export function useAnalysis() {
       setError(null);
       setResult(null);
       try {
-        const minDelay = new Promise((r) => setTimeout(r, 1200));
-        const [res] = await Promise.all([
+        const [, res] = await Promise.all([
+          new Promise((r) => setTimeout(r, 1200)),
           fetch(DEMO_ZIP_URL),
-          minDelay,
         ]);
         if (!res.ok) throw new Error("Could not load sample genome");
         const blob = await res.blob();
@@ -91,6 +94,20 @@ export function useAnalysis() {
     [runParsed],
   );
 
+  const runProfile = useCallback(async (profile: UserProfile) => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    try {
+      await new Promise((r) => setTimeout(r, 600));
+      setResult(runProfileAnalysis(profile));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Profile estimate failed");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const loadSharedResult = useCallback((shared: AnalysisResult) => {
     setError(null);
     setResult({ ...shared, mode: "shared" });
@@ -107,6 +124,7 @@ export function useAnalysis() {
     error,
     analyzeFile,
     runDemo,
+    runProfile,
     loadSharedResult,
     reset,
   };
@@ -121,9 +139,7 @@ async function readGenotypeFileContent(file: File): Promise<string> {
       (f) => !f.dir && /\.txt$/i.test(f.name) && !f.name.includes("README"),
     );
     if (!txtEntry) {
-      throw new Error(
-        "ZIP archive must contain a raw genotype .txt file (e.g. genome_*.txt).",
-      );
+      throw new Error("ZIP must contain a raw genotype .txt file.");
     }
     return txtEntry.async("string");
   }

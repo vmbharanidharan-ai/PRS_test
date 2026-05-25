@@ -8,13 +8,16 @@ export interface InterpretPayload {
   analyzedAt: string;
   variantsInFile: number;
   vendor: string;
+  mode: string;
+  precisionLevel: string;
+  overallRisk: AnalysisResult["overallRisk"];
   familyHistorySummary?: string[];
   cancers: {
     label: string;
-    riskTier: string;
+    precision: string;
     riskStory: RiskStory;
-    ancestryConfidence: { level: string; applicabilityPercent: number };
-    topContributorCount: number;
+    population: AnalysisResult["reports"][0]["population"];
+    prsTier?: string;
     limitations: string[];
   }[];
 }
@@ -25,15 +28,15 @@ export function buildInterpretPayload(result: AnalysisResult): InterpretPayload 
     variantsInFile: result.variantsInFile,
     vendor: result.vendor,
     familyHistorySummary: result.familyHistorySummary,
+    mode: result.mode,
+    precisionLevel: result.precisionLevel,
+    overallRisk: result.overallRisk,
     cancers: result.reports.map((r) => ({
       label: r.label,
-      riskTier: r.prs.riskTier,
+      precision: r.precision,
       riskStory: r.riskStory,
-      ancestryConfidence: {
-        level: r.ancestryConfidence.level,
-        applicabilityPercent: r.ancestryConfidence.applicabilityPercent,
-      },
-      topContributorCount: r.prs.topContributors.length,
+      population: r.population,
+      prsTier: r.prs?.riskTier,
       limitations: r.limitations,
     })),
   };

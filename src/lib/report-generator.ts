@@ -8,12 +8,13 @@ import type {
 import { buildAncestryConfidence } from "./ancestry-confidence";
 import { getFamilyHistorySupplements, summarizeFamilyHistory } from "./family-history";
 import { GLOBAL_DISCLAIMER, getScreeningRecommendations } from "./guidelines";
-import { buildRiskStory } from "./risk-story";
-import { buildScreeningTimeline } from "./screening-timeline";
-import type { FamilyHistoryInput } from "./types";
+import { computeOverallRisk } from "./overall-risk";
+import { populationFromPrs } from "./population-from-prs";
 import { computePrsForScore, validateMatchRate } from "./prs-calculator";
 import { getActivePrsScores } from "./prs-registry";
-import type { UserGenotype } from "./types";
+import { buildRiskStory } from "./risk-story";
+import { buildScreeningTimeline } from "./screening-timeline";
+import type { FamilyHistoryInput, UserGenotype } from "./types";
 
 const CANCER_LABELS: Record<CancerType, string> = {
   breast: "Breast cancer",
@@ -29,23 +30,19 @@ function plainLanguageSummary(prs: PrsComputationResult): string {
     moderate: "somewhat higher than most people",
     high: "higher than most people (top ~5% of the reference group)",
   };
-
   const tier = tierPhrases[prs.riskTier] ?? "within the population range";
   const matchPct = Math.round(prs.matchRate * 100);
-
-  return `Your polygenic risk score for ${CANCER_LABELS[prs.cancerType]} is ${tier}. You are at approximately the ${prs.percentile.toFixed(0)}th percentile compared to the ${prs.name} reference population. This score used ${prs.variantsUsed} of ${prs.variantsTotal} known variants (${matchPct}% match) from your genotype file.`;
+  return `Your personal polygenic score for ${CANCER_LABELS[prs.cancerType]} is ${tier}. You rank about the ${prs.percentile.toFixed(0)}th percentile in the reference population (${matchPct}% variant match).`;
 }
 
 function limitationsFor(prs: PrsComputationResult): string[] {
   const limits = [
-    "Polygenic scores reflect common variant burden, not rare pathogenic mutations.",
-    "Reference populations are primarily European-ancestry; accuracy may differ for other ancestries.",
-    "Screening guidelines in this report are general; your clinician may recommend different actions based on family history and personal factors.",
+    "Personal polygenic score from your DNA — common variants only, not BRCA/Lynch.",
+    "Reference populations are primarily European-ancestry; accuracy may differ.",
+    "Educational only — not medical guidance or a diagnosis.",
   ];
-
   const matchWarning = validateMatchRate(prs);
   if (matchWarning) limits.unshift(matchWarning);
-
   return limits;
 }
 
@@ -59,10 +56,13 @@ function buildCancerReport(
 ): CancerReport {
   const base = getScreeningRecommendations(prs.cancerType, prs, options);
   const fhExtra = getFamilyHistorySupplements(prs.cancerType, options?.familyHistory);
+  const population = populationFromPrs(prs, true);
 
   return {
     cancerType: prs.cancerType,
     label: CANCER_LABELS[prs.cancerType],
+    precision: "genetic",
+    population,
     prs,
     plainLanguageSummary: plainLanguageSummary(prs),
     riskStory: buildRiskStory(CANCER_LABELS[prs.cancerType], prs),
@@ -81,7 +81,7 @@ export function runAnalysis(
     sex?: "female" | "male";
     age?: number;
     familyHistory?: FamilyHistoryInput;
-    mode?: "personal" | "demo" | "shared";
+    mode?: "dna" | "demo" | "shared";
   },
 ): AnalysisResult {
   const scores = getActivePrsScores();
@@ -92,6 +92,7 @@ export function runAnalysis(
     reports.push(buildCancerReport(prs, options));
   }
 
+  const mode = options.mode ?? "dna";
   const result: AnalysisResult = {
     analyzedAt: new Date().toISOString(),
     vendor: options.vendor,
@@ -99,7 +100,9 @@ export function runAnalysis(
     reports,
     globalDisclaimer: GLOBAL_DISCLAIMER,
     dataNotStored: true,
-    mode: options.mode ?? "personal",
+    mode,
+    precisionLevel: mode === "demo" ? "demo" : "genetic",
+    overallRisk: computeOverallRisk(reports),
   };
 
   if (options.familyHistory?.provided) {
@@ -109,3 +112,5 @@ export function runAnalysis(
 
   return result;
 }
+
+export { runProfileAnalysis } from "./profile-risk-estimator";

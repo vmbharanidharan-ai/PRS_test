@@ -3,74 +3,70 @@ import { RiskBadge } from "@/components/RiskBadge";
 import { AncestryConfidenceMeter } from "./AncestryConfidenceMeter";
 import { ScreeningTimeline } from "./ScreeningTimeline";
 import { SnpContributors } from "./SnpContributors";
-import clsx from "clsx";
 
 export function CancerInsightCard({ report }: { report: CancerReport }) {
-  const { riskStory, prs } = report;
-  const emphasisRing =
-    riskStory.emphasis === "attention"
-      ? "ring-rose-200"
-      : riskStory.emphasis === "reassuring"
-        ? "ring-emerald-200"
-        : "ring-slate-200";
+  const { riskStory, population, prs } = report;
+  const tier = prs?.riskTier ?? population.riskBand;
 
   return (
-    <article
-      className={clsx(
-        "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-2",
-        emphasisRing,
-      )}
-    >
+    <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="text-xl font-semibold text-slate-900">{report.label}</h3>
-        <RiskBadge tier={prs.riskTier} />
+        <RiskBadge tier={tier} />
       </div>
 
+      {report.precision === "population" && (
+        <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Population-based estimate — not from your DNA. Percentile range:{" "}
+          {population.percentileLow}th–{population.percentileHigh}th.
+        </p>
+      )}
+
       <p className="mt-4 text-lg font-medium text-slate-900">{riskStory.headline}</p>
-      <p className="mt-2 text-sm leading-relaxed text-slate-700">
-        {riskStory.lifetimeFraming}
-      </p>
-      <p className="mt-3 rounded-lg bg-brand-50/60 px-4 py-3 text-sm text-brand-950">
+      <p className="mt-2 text-sm text-slate-700">{riskStory.lifetimeFraming}</p>
+      <p className="mt-3 rounded-lg bg-brand-50/50 px-3 py-2 text-sm text-brand-950">
         {riskStory.populationComparison}
       </p>
-      <p className="mt-3 text-sm leading-relaxed text-slate-600">
-        <strong>What this means:</strong> {riskStory.plainMeaning}
+      <div className="mt-4">
+        <p className="text-sm font-medium text-slate-800">What this means</p>
+        <p className="mt-1 text-sm text-slate-600">{riskStory.plainMeaning}</p>
+      </div>
+
+      <p className="mt-3 text-xs text-slate-500">
+        Confidence: {population.confidenceLevel} · {report.ancestryConfidence.label}
       </p>
 
-      <AncestryConfidenceMeter confidence={report.ancestryConfidence} />
-      <ScreeningTimeline items={report.timeline} />
-      <SnpContributors contributors={prs.topContributors} />
+      {report.precision === "population" && (
+        <div className="mt-4 rounded-lg border border-slate-100 p-3">
+          <p className="text-xs font-medium text-slate-700">What would shift this</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-600">
+            {population.whatWouldShift.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
-      <details className="mt-4 rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
+      <details className="mt-4">
         <summary className="cursor-pointer text-sm font-medium text-slate-600">
           Technical details
         </summary>
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-sm">
-          <div>
-            <p className="font-bold text-brand-700">{prs.percentile.toFixed(0)}%</p>
-            <p className="text-xs text-slate-500">Percentile</p>
-          </div>
-          <div>
-            <p className="font-bold">
-              {prs.zScore >= 0 ? "+" : ""}
-              {prs.zScore.toFixed(2)}
+        <div className="mt-3 space-y-2 text-xs text-slate-500">
+          {prs && (
+            <p>
+              PRS: {prs.pgsId} · {prs.percentile.toFixed(0)}th percentile ·{" "}
+              {Math.round(prs.matchRate * 100)}% match
             </p>
-            <p className="text-xs text-slate-500">Z-score</p>
-          </div>
-          <div>
-            <p className="font-bold">{Math.round(prs.matchRate * 100)}%</p>
-            <p className="text-xs text-slate-500">Variant match</p>
-          </div>
+          )}
+          <p>Lifetime risk (epidemiological scale): ~{population.lifetimeRiskPercent}%</p>
         </div>
-        <p className="mt-3 text-xs text-slate-500">
-          {report.prs.pgsId} · {report.prs.name}
-        </p>
-        <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-slate-500">
-          {report.limitations.map((l, i) => (
-            <li key={i}>{l}</li>
-          ))}
-        </ul>
       </details>
+
+      {prs && prs.topContributors.length > 0 && (
+        <div className="mt-4 border-t pt-4">
+          <SnpContributors contributors={prs.topContributors} />
+        </div>
+      )}
     </article>
   );
 }

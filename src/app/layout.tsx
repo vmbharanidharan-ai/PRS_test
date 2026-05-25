@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PRS Screen — Cancer Polygenic Risk Re-interpretation",
+  title: "GeneScope — Genetic Health Risk Insights",
   description:
-    "Upload your 23andMe or AncestryDNA raw data for updated polygenic risk scores and screening guidance based on published GWAS weights and clinical guidelines.",
+    "Understand inherited cancer risk with instant demo, profile-based estimates, or DNA-powered polygenic scores. Educational genetic information, not medical advice.",
 };
 
 export default function RootLayout({

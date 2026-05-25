@@ -8,6 +8,47 @@ export type RiskTier = "low" | "average" | "moderate" | "high";
 
 export type GenotypeVendor = "23andme" | "ancestry" | "unknown";
 
+export type PrecisionLevel = "population" | "genetic" | "demo";
+
+export type AnalysisMode = "demo" | "dna" | "profile" | "shared";
+
+export type AncestryGroup =
+  | "european"
+  | "african"
+  | "asian"
+  | "hispanic"
+  | "other"
+  | "unknown";
+
+export interface UserProfile {
+  age?: number;
+  sex?: "female" | "male";
+  ancestry?: AncestryGroup;
+  familyHistory?: FamilyHistoryInput;
+}
+
+export interface PopulationCancerRisk {
+  cancerType: CancerType;
+  label: string;
+  lifetimeRiskPercent: number;
+  riskBand: RiskTier;
+  percentileLow: number;
+  percentileHigh: number;
+  centralPercentile: number;
+  likelihoodLabel: string;
+  confidenceLevel: "low" | "moderate" | "high";
+  isPopulationEstimate: boolean;
+  whatWouldShift: string[];
+}
+
+export interface OverallRiskSummary {
+  tier: RiskTier;
+  label: string;
+  /** 0–100 visual bar position */
+  barPercent: number;
+  summary: string;
+}
+
 export interface PrsVariant {
   rsid: string;
   effectAllele: string;
@@ -30,10 +71,8 @@ export interface PrsScoreDefinition {
 }
 
 export interface PopulationReference {
-  /** Mean PRS in reference population (same scale as computed score) */
   mean: number;
   sd: number;
-  /** Approximate lifetime risk at population mean (for context) */
   baselineLifetimeRisk?: number;
   ancestry: string;
   source: string;
@@ -99,7 +138,9 @@ export interface ScreeningRecommendation {
 export interface CancerReport {
   cancerType: CancerType;
   label: string;
-  prs: PrsComputationResult;
+  precision: "population" | "genetic";
+  population: PopulationCancerRisk;
+  prs?: PrsComputationResult;
   plainLanguageSummary: string;
   riskStory: RiskStory;
   timeline: ScreeningTimelineItem[];
@@ -108,7 +149,6 @@ export interface CancerReport {
   limitations: string[];
 }
 
-/** Optional; only set when user expands and completes the family-history section. */
 export interface FamilyHistoryInput {
   provided: true;
   breastFirstDegree?: boolean;
@@ -121,8 +161,6 @@ export interface FamilyHistoryInput {
   youngestAffectedAge?: number;
 }
 
-export type AnalysisMode = "personal" | "demo" | "shared";
-
 export interface AnalysisResult {
   analyzedAt: string;
   vendor: GenotypeVendor;
@@ -131,7 +169,10 @@ export interface AnalysisResult {
   globalDisclaimer: string;
   dataNotStored: boolean;
   mode: AnalysisMode;
-  /** Present only when user opted into the optional questionnaire */
+  precisionLevel: PrecisionLevel;
+  overallRisk: OverallRiskSummary;
+  profile?: UserProfile;
+  populationDisclaimer?: string;
   familyHistory?: FamilyHistoryInput;
   familyHistorySummary?: string[];
 }

@@ -1,4 +1,9 @@
-import type { AncestryConfidence, PrsComputationResult } from "./types";
+import type {
+  AncestryConfidence,
+  PopulationCancerRisk,
+  PrsComputationResult,
+  UserProfile,
+} from "./types";
 
 export function buildAncestryConfidence(
   prs: PrsComputationResult,
@@ -41,6 +46,36 @@ export function buildAncestryConfidence(
     applicabilityPercent,
     populationNote:
       "Model confidence reflects variant match and known ancestry limits of published PRS — not a measurement of your personal ancestry.",
+    warnings,
+  };
+}
+
+export function buildAncestryConfidenceForPopulation(
+  profile: UserProfile,
+  pop: PopulationCancerRisk,
+): AncestryConfidence {
+  const ancestry = profile.ancestry ?? "unknown";
+  let applicabilityPercent = ancestry === "unknown" ? 45 : 65;
+  if (ancestry !== "european" && ancestry !== "unknown") applicabilityPercent -= 10;
+
+  const warnings = [
+    "Without DNA data, ancestry applicability is inferred from your selection only.",
+    "Published PRS models are primarily calibrated in European-ancestry cohorts.",
+    "This is a population-informed estimate — not a personal genetic measurement.",
+  ];
+
+  return {
+    level: pop.confidenceLevel,
+    label:
+      pop.confidenceLevel === "high"
+        ? "Moderate model fit (profile only)"
+        : "Limited — upload DNA for precision",
+    matchPercent: 0,
+    applicabilityPercent,
+    populationNote:
+      ancestry === "unknown"
+        ? "Select ancestry or upload DNA to improve applicability estimates."
+        : `Profile ancestry: ${ancestry}. Applicability meter reflects epidemiological priors.`,
     warnings,
   };
 }

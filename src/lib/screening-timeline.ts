@@ -5,12 +5,11 @@ import type {
   ScreeningTimelineItem,
 } from "./types";
 
-export function buildScreeningTimeline(
+export function buildScreeningTimelineFromTier(
   cancerType: CancerType,
-  prs: PrsComputationResult,
+  tier: RiskTier,
   options?: { sex?: "female" | "male"; age?: number },
 ): ScreeningTimelineItem[] {
-  const tier = prs.riskTier;
   const age = options?.age ?? 40;
 
   switch (cancerType) {
@@ -40,6 +39,14 @@ export function buildScreeningTimeline(
     default:
       return [];
   }
+}
+
+export function buildScreeningTimeline(
+  cancerType: CancerType,
+  prs: PrsComputationResult,
+  options?: { sex?: "female" | "male"; age?: number },
+): ScreeningTimelineItem[] {
+  return buildScreeningTimelineFromTier(cancerType, prs.riskTier, options);
 }
 
 function generalNote(text: string): ScreeningTimelineItem[] {

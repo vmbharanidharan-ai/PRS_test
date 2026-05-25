@@ -33,7 +33,12 @@ export async function downloadReportPdf(result: AnalysisResult): Promise<void> {
     y += mm;
   };
 
-  writeLine("PRS Screen — Polygenic Risk Report", { size: 16, bold: true });
+  writeLine("GeneScope — Genetic Health Risk Insights", { size: 16, bold: true });
+  writeGap(2);
+  writeLine(
+    `Overall: ${result.overallRisk.label} · Mode: ${result.precisionLevel}`,
+    { size: 9 },
+  );
   writeGap(2);
   writeLine(
     `Generated: ${new Date(result.analyzedAt).toLocaleString()} · ${result.variantsInFile.toLocaleString()} variants · ${result.vendor}`,

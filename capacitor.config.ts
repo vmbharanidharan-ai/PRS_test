@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.prsscreen.app",
-  appName: "PRS Screen",
+  appId: "com.genescreen.app",
+  appName: "GeneScope",
   webDir: "out",
   android: {
     allowMixedContent: false,
