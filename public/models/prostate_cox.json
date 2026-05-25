@@ -1,15 +1,27 @@
 {
   "cancer": "prostate",
-  "version": "placeholder_v1",
-  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "version": "literature_v1",
+  "source": "Published HR per SD PRS + SEER (male)",
+  "calibration": "literature_calibrated",
   "coefficients": {
-    "prs": 0.2,
+    "prs": 0.4054651081081644,
     "age": 0.015,
-    "fh_prostate_first_degree": 0.69,
-    "pc1": 0,
-    "pc2": 0
+    "fh_prostate_first_degree": 0.6931471805599453,
+    "young_onset_fh": 0.13976194237515863
   },
-  "baseline_hazard_scale": 1,
+  "baseline_hazard_scale": 1.0,
   "baseline_lifetime_risk": 0.125,
-  "notes": ["Placeholder — educational only"]
+  "references": [
+    "Conti et al. Nat Genet 2021 (PGS000662)",
+    "SEER Cancer Stat Facts: Prostate Cancer",
+    "Lewis et al. 2021 (PRS clinical translation)"
+  ],
+  "notes": [
+    "Male lifetime baseline from SEER order-of-magnitude."
+  ],
+  "data_layers": {
+    "prs_weights": "PGS Catalog",
+    "baseline_risk": "SEER",
+    "cox_betas": "Published hazard ratios"
+  }
 }

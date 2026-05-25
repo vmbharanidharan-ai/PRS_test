@@ -4,10 +4,13 @@ export interface CoxModelCoefficients {
   cancer: string;
   version: string;
   source: string;
+  calibration?: string;
   coefficients: Record<string, number>;
   baseline_hazard_scale: number;
   baseline_lifetime_risk: number;
+  references?: string[];
   notes?: string[];
+  data_layers?: Record<string, string>;
 }
 
 import breastCox from "../../public/models/breast_cox.json";

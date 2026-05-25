@@ -17,7 +17,7 @@ We are upgrading from heuristic PRS approximation to **cohort-calibrated** pipel
 ## Replace internally
 
 - Reference panels → 1000G PLINK + PCA (`genomics-pipeline/ancestry/`)
-- Risk coefficients → UKB Cox (`genomics-pipeline/models/`, `public/models/*_cox.json`)
+- Risk coefficients → literature Cox (PGS + SEER + published HRs; `literature_cox_models.py`, `public/models/*_cox.json`). UKB/FinnGen optional via `fit_ukbb_models.py`
 - PRS computation → PRS-CS / LDpred2 (`genomics-pipeline/prs/`)
 - Evaluation → CLI only (`genomics-pipeline/evaluation/`) — no new UI pages unless requested
 

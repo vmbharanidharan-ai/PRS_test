@@ -1,17 +1,30 @@
 {
   "cancer": "colorectal",
-  "version": "placeholder_v1",
-  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "version": "literature_v1",
+  "source": "Published HR per SD PRS + SEER + FH / Lynch priors",
+  "calibration": "literature_calibrated",
   "coefficients": {
-    "prs": 0.22,
+    "prs": 0.371563556432483,
     "age": 0.012,
-    "fh_breast_first_degree": 0,
-    "fh_colorectal_first_degree": 0.74,
-    "fh_lynch": 0.92,
-    "pc1": 0,
-    "pc2": 0
+    "fh_colorectal_first_degree": 0.7419373447293773,
+    "fh_lynch": 0.9162907318741551,
+    "young_onset_fh": 0.13976194237515863
   },
-  "baseline_hazard_scale": 1,
-  "baseline_lifetime_risk": 0.04,
-  "notes": ["Placeholder — educational only"]
+  "baseline_hazard_scale": 1.0,
+  "baseline_lifetime_risk": 0.041,
+  "references": [
+    "Chatterjee et al. 2016",
+    "Fan et al. Int J Cancer 2023 (PGS004240)",
+    "SEER Cancer Stat Facts: Colorectal Cancer",
+    "PREMM5 / Lynch literature (FH terms only \u2014 not full PREMM5 fit)"
+  ],
+  "notes": [
+    "Literature-calibrated log-risk coefficients.",
+    "PREMM5 germline probability requires certified tool for clinical use."
+  ],
+  "data_layers": {
+    "prs_weights": "PGS Catalog",
+    "baseline_risk": "SEER",
+    "cox_betas": "Published hazard ratios"
+  }
 }

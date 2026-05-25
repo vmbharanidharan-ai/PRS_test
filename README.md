@@ -71,6 +71,8 @@ Details: [docs/RISK_MODELS.md](docs/RISK_MODELS.md) · Reference pipeline: [scri
 - **Colorectal:** PREMM5-inspired Lynch probability model  
 - **Other cancers:** SEER baseline + clinical relative risk  
 
+**Data stack (no UK Biobank required):** PRS weights from PGS Catalog, baseline risk from SEER-scale priors, Cox β from published hazard ratios. See [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md).
+
 Still **not from your DNA** — upload a genotype file for polygenic calibration.
 
 ### Optional: save history (developers)

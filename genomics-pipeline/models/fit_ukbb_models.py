@@ -52,7 +52,7 @@ def main() -> None:
         print(
             "UK Biobank phenotype file not found.\n"
             "Apply for UKB access; build phenotype table with incident cancer labels.\n"
-            "Run: python3 genomics-pipeline/models/cox_models.py  # placeholders"
+            "Default: python3 genomics-pipeline/models/literature_cox_models.py  # no UKB required"
         )
         return
 

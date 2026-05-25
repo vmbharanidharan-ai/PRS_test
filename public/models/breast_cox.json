@@ -1,20 +1,34 @@
 {
   "cancer": "breast",
-  "version": "placeholder_v1",
-  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "version": "literature_v1",
+  "source": "Published HR per SD PRS + SEER baseline + FH meta-analyses",
+  "calibration": "literature_calibrated",
   "coefficients": {
-    "prs": 0.25,
+    "prs": 0.5877866649021191,
     "age": 0.012,
-    "fh_breast_first_degree": 0.69,
-    "fh_colorectal_first_degree": 0,
-    "fh_prostate_first_degree": 0,
-    "pc1": 0,
-    "pc2": 0
+    "fh_breast_first_degree": 0.6931471805599453,
+    "fh_breast_second_degree": 0.3364722366212129,
+    "fh_ovarian_first_degree": 0.30010459245033816,
+    "fh_ashkenazi_jewish": 0.22314355131420976,
+    "young_onset_fh": 0.13976194237515863
   },
-  "baseline_hazard_scale": 1,
+  "baseline_hazard_scale": 1.0,
   "baseline_lifetime_risk": 0.13,
+  "references": [
+    "Chatterjee et al. Nat Rev Genet 2016; doi:10.1038/nrg.2016.27",
+    "Lewis et al. Hum Genet Genomics Adv 2021; doi:10.1016/j.xhgg.2021.100047",
+    "Jia et al. Nat Genet 2024 (PGS005104); PGS Catalog",
+    "SEER Cancer Stat Facts: Female Breast Cancer"
+  ],
   "notes": [
-    "Placeholder Cox betas on log-RR scale for pipeline wiring.",
-    "Run: python3 genomics-pipeline/models/fit_ukbb_models.py"
-  ]
+    "Not UK Biobank-fitted. \u03b2_prs = ln(HR per 1 SD) from translational PRS literature.",
+    "R_base from SEER-scale U.S. lifetime risk (female).",
+    "FinnGen/UKB Cox fit optional via fit_ukbb_models.py."
+  ],
+  "data_layers": {
+    "prs_weights": "PGS Catalog",
+    "baseline_risk": "SEER",
+    "cox_betas": "Published hazard ratios",
+    "ancestry": "1000 Genomes (reference panels)"
+  }
 }

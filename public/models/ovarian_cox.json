@@ -1,16 +1,28 @@
 {
   "cancer": "ovarian",
-  "version": "placeholder_v1",
-  "source": "Replace with fit_ukbb_models.py — NOT UK Biobank fitted",
+  "version": "literature_v1",
+  "source": "Published HR per SD PRS + SEER (female)",
+  "calibration": "literature_calibrated",
   "coefficients": {
-    "prs": 0.18,
+    "prs": 0.30010459245033816,
     "age": 0.012,
-    "fh_ovarian_first_degree": 1.1,
-    "fh_breast_first_degree": 0.41,
-    "pc1": 0,
-    "pc2": 0
+    "fh_ovarian_first_degree": 1.0986122886681098,
+    "fh_breast_first_degree": 0.4054651081081644,
+    "fh_ashkenazi_jewish": 0.26236426446749106,
+    "young_onset_fh": 0.13976194237515863
   },
-  "baseline_hazard_scale": 1,
+  "baseline_hazard_scale": 1.0,
   "baseline_lifetime_risk": 0.012,
-  "notes": ["Placeholder — educational only"]
+  "references": [
+    "PGS Catalog PGS000048",
+    "SEER Cancer Stat Facts: Ovarian Cancer"
+  ],
+  "notes": [
+    "Low baseline incidence; PRS discrimination modest in literature."
+  ],
+  "data_layers": {
+    "prs_weights": "PGS Catalog",
+    "baseline_risk": "SEER",
+    "cox_betas": "Published hazard ratios"
+  }
 }

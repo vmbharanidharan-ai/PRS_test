@@ -1,9 +1,17 @@
 /**
  * Unified risk engine facade — preserves report API contracts.
  *
+ * UK Biobank is used only as a conceptual calibration standard.
+ * This implementation uses:
+ *   - PGS Catalog (PRS weights)
+ *   - SEER / GLOBOCAN-scale baselines (R_base)
+ *   - Published hazard ratios (Cox β in public/models/{cancer}_cox.json)
+ *
+ * No individual-level UKB data is required or assumed.
+ *
  * Priority:
- * 1. UK Biobank Cox coefficients (public/models/{cancer}_cox.json)
- * 2. Legacy joint-risk-model (hand-tuned log-linear)
+ * 1. Literature-calibrated Cox (public/models/{cancer}_cox.json)
+ * 2. Legacy joint-risk-model (hand-tuned log-linear fallback)
  *
  * log(RR) = Σ β·x  then  P = 1 − (1 − R_base)^RR
  */
@@ -15,6 +23,7 @@ import {
   resolveBaselineLifetimeRisk,
   type JointRiskInput,
 } from "./joint-risk-model";
+import { seerBaselineLifetimeRisk } from "./seer-baseline";
 import { loadCoefficientsSync, type CoxModelCoefficients } from "./cox-coefficients";
 import { bootstrapAbsoluteRiskUncertainty } from "./uncertainty";
 import type { AbsoluteRiskBreakdown, FamilyHistoryInput, UserProfile } from "./types";
@@ -40,6 +49,7 @@ function encodeFhFeatures(
   const x: Record<string, number> = {};
   if (!fh?.provided) return x;
   if (fh.breastFirstDegree) x.fh_breast_first_degree = 1;
+  if (fh.breastSecondDegree) x.fh_breast_second_degree = 1;
   if (fh.colorectalFirstDegree) x.fh_colorectal_first_degree = 1;
   if (fh.prostateFirstDegree) x.fh_prostate_first_degree = 1;
   if (fh.ovarianFirstDegree) x.fh_ovarian_first_degree = 1;
@@ -107,14 +117,19 @@ export function buildAbsoluteRiskBreakdown(
       prs: components.prs ?? 0,
       familyHistory:
         (components.fh_breast_first_degree ?? 0) +
+        (components.fh_breast_second_degree ?? 0) +
         (components.fh_colorectal_first_degree ?? 0) +
         (components.fh_prostate_first_degree ?? 0) +
+        (components.fh_ovarian_first_degree ?? 0) +
         (components.fh_lynch ?? 0),
       age: components.age ?? 0,
       ancestry: (components.pc1 ?? 0) + (components.pc2 ?? 0),
       clinicalPrior: components.clinical_prior ?? 0,
     };
-    baselineLifetimeRisk = cox.baseline_lifetime_risk;
+    baselineLifetimeRisk = seerBaselineLifetimeRisk(
+      input.cancerType,
+      input.profile,
+    );
   } else {
     const legacy = computeLogRelativeRisk(input);
     logRelativeRisk = legacy.total;

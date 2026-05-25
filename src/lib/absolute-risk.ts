@@ -1,5 +1,5 @@
 /**
- * Absolute risk — delegates to risk-engine (Cox UKB → legacy joint fallback).
+ * Absolute risk — delegates to risk-engine (literature Cox → legacy joint fallback).
  * API contract unchanged for report-generator.
  */
 

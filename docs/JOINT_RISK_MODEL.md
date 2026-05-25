@@ -37,15 +37,23 @@ P(disease) = 1 − (1 − R_base)^RR
 | TypeScript (browser) | `src/lib/joint-risk-model.ts`, `uncertainty.ts`, `absolute-risk.ts` |
 | Python (batch/backend) | `genomics-pipeline/models/joint_risk_model.py` |
 
-## Training production coefficients
+## Cox coefficients (default: literature-calibrated)
 
-Use cohort labels (e.g. UK Biobank incident cancer) with:
+GeneScope does **not** require UK Biobank individual-level data. Default β come from published HR per SD PRS and FH meta-analyses:
 
-```python
-from sklearn.linear_model import LogisticRegression
-# features: Z_PRS, FH indicators, age, PCs 1-10
+```bash
+npm run build-cox-literature
+# → public/models/{cancer}_cox.json
 ```
 
-or `lifelines.CoxPHFitter` for time-to-event.
+See **`docs/DATA_SOURCES.md`** for the three-layer stack (PGS Catalog + SEER + published HRs).
 
-Do not ship hand-tuned β forever — calibrate on real phenotypes.
+## Optional cohort fitting
+
+When controlled-access data is available (UK Biobank, FinnGen):
+
+```bash
+python3 genomics-pipeline/models/fit_ukbb_models.py --cancer breast
+```
+
+or `lifelines.CoxPHFitter` on incident cancer labels — replaces literature JSON.

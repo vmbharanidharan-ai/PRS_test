@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Cox proportional hazards — UK Biobank–style joint risk (log hazard scale).
+Cox proportional hazards — literature-calibrated joint risk (log hazard scale).
+
+Default export: literature_cox_models.py (PGS + SEER + published HRs).
+Optional upgrade: fit_ukbb_models.py when UK Biobank / FinnGen data available.
 
 log h(t|x) = log h0(t) + β_prs·PRS + β_age·age + β_fh·FH + Σ β_k·PC_k
-
-Export coefficients to public/models/{cancer}_cox.json for TS risk-engine.
-Educational / research — not clinically validated.
 """
 
 from __future__ import annotations
@@ -79,10 +79,10 @@ def placeholder_coefficients(cancer: str) -> CoxCoefficients:
 
 
 def main() -> None:
-    for cancer in ("breast", "colorectal", "prostate", "ovarian"):
-        m = placeholder_coefficients(cancer)
-        export_json(m, MODELS_OUT / f"{cancer}_cox.json")
-        print(f"Wrote {MODELS_OUT / f'{cancer}_cox.json'}")
+    """Delegate to literature-calibrated models (default for GeneScope)."""
+    from literature_cox_models import main as literature_main
+
+    literature_main()
 
 
 if __name__ == "__main__":
