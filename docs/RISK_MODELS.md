@@ -35,10 +35,15 @@ Bundled under `src/data/prs-reference/{cancer}/{pgs_id}/{EUR|AFR|EAS|...}.json`:
 
 If `ancestryConfidence < 0.7`, weighted mixture across panels.
 
-### Step 4 — Absolute risk (Chatterjee / Lewis)
+### Step 4 — Joint log-risk + absolute risk
 
-P = 1 − (1 − R_base)^(RR_PRS × RR_clinical)  
-RR_PRS = exp(Z × ln(HR_per_SD))
+**Single log-linear model (not multiplicative stacking):**
+
+log(RR) = β_PRS·Z + β_FH·FH + β_age·age + β_ancestry·X  
+RR = exp(log(RR))  
+P = 1 − (1 − R_base)^RR
+
+See [JOINT_RISK_MODEL.md](./JOINT_RISK_MODEL.md). Bootstrap 95% CI on lifetime risk %.
 
 ## Profile mode — clinical consensus
 

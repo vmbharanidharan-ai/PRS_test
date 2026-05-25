@@ -1,75 +1,71 @@
 /**
- * Joint epidemiological absolute risk (Chatterjee et al., 2016; Lewis et al., 2021).
- *
- * P(Disease) = 1 - (1 - R_base)^RR_total
- * RR_total = RR_clinical × RR_prs
- * RR_prs = exp(Z × ln(relativeRiskPerSd))
+ * Absolute risk via unified log-linear joint model (see joint-risk-model.ts).
+ * Legacy multiplicative RR_PRS × RR_clinical removed.
  */
 
-import type {
-  AbsoluteRiskBreakdown,
-  CancerType,
-  UserProfile,
-} from "./types";
-import { baselineFor } from "./epidemiology-baselines";
+import {
+  absoluteRiskFromLogRr,
+  computeLogRelativeRisk,
+  logRelativeRiskToRr,
+  resolveBaselineLifetimeRisk,
+  type JointRiskInput,
+} from "./joint-risk-model";
+import { bootstrapAbsoluteRiskUncertainty } from "./uncertainty";
+import type { AbsoluteRiskBreakdown } from "./types";
 
 export type { AbsoluteRiskBreakdown };
 
+export function buildAbsoluteRiskBreakdown(
+  input: JointRiskInput & { method: string; includeUncertainty?: boolean },
+): AbsoluteRiskBreakdown {
+  const baselineLifetimeRisk = resolveBaselineLifetimeRisk(
+    input.cancerType,
+    input.profile,
+  );
+  const components = computeLogRelativeRisk(input);
+  const logRelativeRisk = components.total;
+  const rrTotal = logRelativeRiskToRr(logRelativeRisk);
+  const absoluteLifetimeRisk = absoluteRiskFromLogRr(
+    baselineLifetimeRisk,
+    logRelativeRisk,
+  );
+
+  const uncertainty =
+    input.includeUncertainty !== false
+      ? bootstrapAbsoluteRiskUncertainty(input)
+      : undefined;
+
+  const absoluteLifetimeRiskPercent =
+    uncertainty?.lifetimeRiskPercent ??
+    Math.round(absoluteLifetimeRisk * 1000) / 10;
+
+  return {
+    cancerType: input.cancerType,
+    baselineLifetimeRisk,
+    rrTotal,
+    logRelativeRisk,
+    logComponents: {
+      prs: components.prs,
+      familyHistory: components.familyHistory,
+      age: components.age,
+      ancestry: components.ancestry,
+      clinicalPrior: components.clinicalPrior,
+    },
+    absoluteLifetimeRisk,
+    absoluteLifetimeRiskPercent,
+    uncertainty,
+    method: input.method,
+  };
+}
+
+/** @deprecated Use log-linear joint model — kept for migration references */
 export function rrFromPrsZ(z: number, relativeRiskPerSd: number): number {
-  if (relativeRiskPerSd <= 0) return 1;
   return Math.exp(z * Math.log(relativeRiskPerSd));
 }
 
 export function absoluteLifetimeRisk(
   baselineLifetimeRisk: number,
-  rrTotal: number,
+  logRr: number,
 ): number {
-  const rBase = clamp(baselineLifetimeRisk, 0.0001, 0.99);
-  const rr = Math.max(0.01, rrTotal);
-  return 1 - Math.pow(1 - rBase, rr);
-}
-
-export function buildAbsoluteRiskBreakdown(params: {
-  cancerType: CancerType;
-  zScore?: number;
-  rrClinical: number;
-  profile?: UserProfile;
-  method: string;
-}): AbsoluteRiskBreakdown {
-  const base = baselineFor(params.cancerType);
-  const sex = params.profile?.sex;
-  const rBase =
-    sex === "male"
-      ? base.lifetimeRiskMale
-      : sex === "female"
-        ? base.lifetimeRiskFemale
-        : Math.max(base.lifetimeRiskFemale, base.lifetimeRiskMale);
-
-  const ancestry = params.profile?.ancestry ?? "unknown";
-  const ancestryAdj = base.ancestryMultipliers[ancestry] ?? 1;
-  const baselineLifetimeRisk = rBase * ancestryAdj;
-
-  const rrPrs =
-    params.zScore !== undefined
-      ? rrFromPrsZ(params.zScore, base.hazardRatioPerSd)
-      : 1;
-
-  const rrClinical = Math.max(0.01, params.rrClinical);
-  const rrTotal = rrClinical * rrPrs;
-  const absolute = absoluteLifetimeRisk(baselineLifetimeRisk, rrTotal);
-
-  return {
-    cancerType: params.cancerType as CancerType,
-    baselineLifetimeRisk,
-    rrPrs,
-    rrClinical,
-    rrTotal,
-    absoluteLifetimeRisk: absolute,
-    absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,
-    method: params.method,
-  };
-}
-
-function clamp(n: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, n));
+  return absoluteRiskFromLogRr(baselineLifetimeRisk, logRr);
 }

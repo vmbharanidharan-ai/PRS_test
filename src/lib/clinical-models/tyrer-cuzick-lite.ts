@@ -33,7 +33,7 @@ export function tyrerCuzickLiteBreastRisk(
   const ageFactor = age < 40 ? 0.85 : age > 60 ? 1.1 : 1;
   const logRr = tyrerCuzickLogRr(profile.familyHistory) + Math.log(ageFactor);
   const rrClinical = Math.exp(logRr);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, rrClinical);
+  const absolute = absoluteLifetimeRisk(rBaseAdj, logRr);
 
   return {
     absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,

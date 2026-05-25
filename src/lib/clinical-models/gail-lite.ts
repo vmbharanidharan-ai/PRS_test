@@ -58,7 +58,7 @@ export function gailLiteBreastRisk(profile: UserProfile): ClinicalModelResult {
 
   const logRr = gailLogRelativeRisk(profile);
   const rrClinical = Math.exp(logRr);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, rrClinical);
+  const absolute = absoluteLifetimeRisk(rBaseAdj, logRr);
 
   return {
     absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,

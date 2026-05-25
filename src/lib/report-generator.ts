@@ -18,6 +18,7 @@ import { getActivePrsScores } from "./prs-registry";
 import { buildRiskStory } from "./risk-story";
 import { buildScreeningTimeline } from "./screening-timeline";
 import { screenPathogenicVariants } from "./pathogenic-screen";
+import { inferAncestryFromSelfReport } from "./ancestry-inference";
 import type { FamilyHistoryInput, UserGenotype, UserProfile } from "./types";
 
 const CANCER_LABELS: Record<CancerType, string> = {
@@ -44,7 +45,7 @@ function limitationsFor(prs: PrsComputationResult): string[] {
     "Personal polygenic score from your DNA — common variants only, not BRCA/Lynch unless flagged in pathogenic screen.",
     prs.calibrationMethod === "legacy_hwe"
       ? "Warning: empirical reference panel missing — using legacy HWE fallback."
-      : `Percentile empirically ranked within ${prs.referencePopulation ?? "reference"} panel (${prs.calibrationMethod}).`,
+      : `Empirical PRS percentile (${prs.referencePopulation ?? "ref"}). Absolute risk from log-linear joint model with bootstrap CI — not multiplicative RR stacking.`,
     "Educational only — not medical guidance or a diagnosis.",
   ];
   const matchWarning = validateMatchRateResult(prs);
@@ -107,23 +108,24 @@ export function runAnalysis(
   const reports: CancerReport[] = [];
 
   if (!pathogenicScreen.blocksPrsInterpretation) {
+    const ancestryInf = inferAncestryFromSelfReport(options.ancestry);
+    const profile: UserProfile = {
+      sex: options.sex,
+      age: options.age,
+      ancestry: options.ancestry,
+      familyHistory: options.familyHistory,
+      ancestryProportions: ancestryInf.proportions,
+      ancestryConfidence:
+        options.ancestryConfidence ?? ancestryInf.confidence,
+      ancestryInferenceMethod: ancestryInf.method,
+    };
+
     for (const definition of scores) {
       const prs = computePrsForScore(definition, genotypes, {
         ancestry: options.ancestry,
-        ancestryConfidence:
-          options.ancestryConfidence ?? (options.ancestry ? 0.85 : 0.5),
+        ancestryConfidence: profile.ancestryConfidence,
       });
-      reports.push(
-        buildCancerReport(prs, {
-          ...options,
-          profile: {
-            sex: options.sex,
-            age: options.age,
-            familyHistory: options.familyHistory,
-            ancestry: options.ancestry,
-          },
-        }),
-      );
+      reports.push(buildCancerReport(prs, { ...options, profile }));
     }
   }
 

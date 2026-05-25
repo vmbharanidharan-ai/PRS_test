@@ -66,11 +66,18 @@ export function CancerInsightCard({ report }: { report: CancerReport }) {
             </p>
           )}
           <p>
-            Calibrated lifetime risk: ~{population.lifetimeRiskPercent}%
+            Lifetime risk: ~{population.lifetimeRiskPercent}%
+            {population.uncertainty && (
+              <span className="block text-xs text-slate-600 mt-1">
+                95% CI: {population.uncertainty.ciLow}%–{population.uncertainty.ciHigh}%
+                · confidence {Math.round(population.uncertainty.confidenceScore * 100)}%
+                · PRS coverage {Math.round(population.uncertainty.prsCoverage * 100)}%
+              </span>
+            )}
             {population.absoluteRisk && (
               <span className="block text-xs text-slate-500 mt-1">
-                RR total {population.absoluteRisk.rrTotal.toFixed(2)} (
-                {population.absoluteRisk.method})
+                log(RR) = {population.absoluteRisk.logRelativeRisk.toFixed(3)} → RR{" "}
+                {population.absoluteRisk.rrTotal.toFixed(2)} (joint model, not multiplied)
               </span>
             )}
           </p>

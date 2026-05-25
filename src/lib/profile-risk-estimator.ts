@@ -15,13 +15,12 @@ import { gailLiteBreastRisk } from "./clinical-models/gail-lite";
 import { tyrerCuzickLiteBreastRisk } from "./clinical-models/tyrer-cuzick-lite";
 import { premm5LiteColorectalRisk } from "./clinical-models/premm5-lite";
 import { buildAbsoluteRiskBreakdown } from "./absolute-risk";
-import { clinicalRelativeRisk } from "./clinical-risk";
+import { inferAncestryFromSelfReport } from "./ancestry-inference";
 import { populationFromClinicalModel } from "./population-from-prs";
 import type {
   AnalysisResult,
   CancerReport,
   CancerType,
-  FamilyHistoryInput,
   RiskTier,
   UserProfile,
 } from "./types";
@@ -57,71 +56,82 @@ function centralPercentileFromTier(tier: RiskTier): number {
   }
 }
 
+function enrichProfile(profile: UserProfile): UserProfile {
+  const inf = inferAncestryFromSelfReport(profile.ancestry);
+  return {
+    ...profile,
+    ancestryProportions: inf.proportions,
+    ancestryConfidence: inf.confidence,
+    ancestryInferenceMethod: inf.method,
+  };
+}
+
 function buildProfileCancerReport(
   profile: UserProfile,
   cancer: CancerType,
 ): CancerReport {
+  const enriched = enrichProfile(profile);
   const base = baselineFor(cancer);
   const baselinePct =
-    (profile.sex === "male"
+    (enriched.sex === "male"
       ? base.lifetimeRiskMale
-      : profile.sex === "female"
+      : enriched.sex === "female"
         ? base.lifetimeRiskFemale
         : Math.max(base.lifetimeRiskFemale, base.lifetimeRiskMale)) * 100;
 
-  let modelName = "Chatterjee clinical RR (no DNA)";
-  let absolutePercent: number;
-  let rrClinical: number;
-  let notes: string[] = [
-    "Population-based clinical model — not from your DNA.",
-    "Does not detect BRCA1/2, Lynch syndrome, or other pathogenic variants.",
+  let modelName = "Joint log-risk (clinical prior, no PRS)";
+  let clinicalLogPrior = 0;
+  const notes: string[] = [
+    "Population-based — not from your DNA.",
+    "Clinical models are educational approximations — use NCI BCRAT / PREMM5 for clinical care.",
+    "Does not detect BRCA1/2 or Lynch pathogenic variants.",
   ];
 
-  if (cancer === "breast" && profile.sex !== "male") {
-    const tc = tyrerCuzickLiteBreastRisk(profile);
-    const gail = gailLiteBreastRisk(profile);
+  if (cancer === "breast" && enriched.sex !== "male") {
+    const tc = tyrerCuzickLiteBreastRisk(enriched);
+    const gail = gailLiteBreastRisk(enriched);
     const useTc =
-      (profile.familyHistory?.breastFirstDegree ||
-        profile.familyHistory?.ovarianFirstDegree) ??
-      false;
+      enriched.familyHistory?.breastFirstDegree ||
+      enriched.familyHistory?.ovarianFirstDegree;
     const chosen = useTc ? tc : gail;
-    absolutePercent = chosen.absoluteLifetimeRiskPercent;
-    rrClinical = chosen.rrClinical;
-    modelName = chosen.modelName;
-    notes = [...chosen.notes, ...notes];
+    clinicalLogPrior = Math.log(Math.max(0.01, chosen.rrClinical));
+    modelName = `${chosen.modelName} → log(RR) prior`;
+    notes.push(...chosen.notes);
   } else if (cancer === "colorectal") {
-    const premm = premm5LiteColorectalRisk(profile);
-    absolutePercent = premm.absoluteLifetimeRiskPercent;
-    rrClinical = premm.rrClinical;
-    modelName = premm.modelName;
-    notes = [...premm.notes, ...notes];
-  } else {
-    rrClinical = clinicalRelativeRisk(cancer, profile.familyHistory);
-    const abs = buildAbsoluteRiskBreakdown({
-      cancerType: cancer,
-      rrClinical,
-      profile,
-      method: "Chatterjee: clinical RR only (no PRS Z-score)",
-    });
-    absolutePercent = abs.absoluteLifetimeRiskPercent;
+    const premm = premm5LiteColorectalRisk(enriched);
+    clinicalLogPrior = Math.log(Math.max(0.01, premm.rrClinical));
+    modelName = `${premm.modelName} → log(RR) prior`;
+    notes.push(...premm.notes);
   }
 
-  const tier = tierFromAbsolutePercent(absolutePercent, baselinePct);
-  const central = centralPercentileFromTier(tier);
+  const absoluteRisk = buildAbsoluteRiskBreakdown({
+    cancerType: cancer,
+    profile: enriched,
+    clinicalLogPrior,
+    clinicalModelLabel: modelName,
+    method: modelName,
+    includeUncertainty: true,
+  });
 
+  const tier = tierFromAbsolutePercent(
+    absoluteRisk.absoluteLifetimeRiskPercent,
+    baselinePct,
+  );
+  const central = centralPercentileFromTier(tier);
   const pop = populationFromClinicalModel(
     cancer,
-    absolutePercent,
-    rrClinical,
+    absoluteRisk.absoluteLifetimeRiskPercent,
+    clinicalLogPrior,
     tier,
     modelName,
     central,
+    absoluteRisk.uncertainty,
   );
 
   const options = {
-    sex: profile.sex,
-    age: profile.age,
-    familyHistory: profile.familyHistory,
+    sex: enriched.sex,
+    age: enriched.age,
+    familyHistory: enriched.familyHistory,
   };
 
   const pseudoPrs = {
@@ -135,7 +145,7 @@ function buildProfileCancerReport(
     variantsUsed: 0,
     variantsTotal: 0,
     matchRate: 0,
-    citation: pop.clinicalModel ?? modelName,
+    citation: modelName,
     topContributors: [],
   };
 
@@ -145,13 +155,13 @@ function buildProfileCancerReport(
     precision: "population",
     population: pop,
     prs: undefined,
-    plainLanguageSummary: `${modelName}: calibrated lifetime risk ~${absolutePercent}% (${tier} vs U.S. baseline ~${Math.round(baselinePct * 10) / 10}%). Not from your DNA.`,
+    plainLanguageSummary: `${modelName}: ~${absoluteRisk.absoluteLifetimeRiskPercent}% lifetime (95% CI ${absoluteRisk.uncertainty?.ciLow ?? "?"}–${absoluteRisk.uncertainty?.ciHigh ?? "?"}%). Not from DNA.`,
     riskStory: buildRiskStoryFromPopulation(pop),
     timeline: buildScreeningTimelineFromTier(cancer, tier, options),
-    ancestryConfidence: buildAncestryConfidenceForPopulation(profile, pop),
+    ancestryConfidence: buildAncestryConfidenceForPopulation(enriched, pop),
     screening: [
       ...getScreeningRecommendations(cancer, pseudoPrs, options),
-      ...getFamilyHistorySupplements(cancer, profile.familyHistory),
+      ...getFamilyHistorySupplements(cancer, enriched.familyHistory),
     ],
     limitations: notes,
   };
@@ -174,9 +184,9 @@ export function runProfileAnalysis(profile: UserProfile): AnalysisResult {
     dataNotStored: true,
     mode: "profile",
     precisionLevel: "population",
-    profile,
+    profile: enrichProfile(profile),
     populationDisclaimer:
-      "Clinical consensus models (Gail / Tyrer-Cuzick / PREMM5-lite) — not your personal genotype. Upload DNA for polygenic calibration.",
+      "Joint log-risk model with clinical priors (Gail / Tyrer-Cuzick / PREMM5 approximations) — upload DNA for PRS term.",
     overallRisk: computeOverallRisk(reports),
   };
 

@@ -41,7 +41,7 @@ export function premm5LiteColorectalRisk(profile: UserProfile): ClinicalModelRes
 
   const lynchProb = premm5LynchProbability(profile);
   const rrClinical = 1 + lynchProb * 4 + (profile.familyHistory?.colorectalFirstDegree ? 1.2 : 0);
-  const absolute = absoluteLifetimeRisk(rBaseAdj, rrClinical);
+  const absolute = absoluteLifetimeRisk(rBaseAdj, Math.log(Math.max(0.01, rrClinical)));
 
   return {
     absoluteLifetimeRiskPercent: Math.round(absolute * 1000) / 10,

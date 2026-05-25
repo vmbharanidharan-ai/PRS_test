@@ -24,17 +24,39 @@ export interface UserProfile {
   age?: number;
   sex?: "female" | "male";
   ancestry?: AncestryGroup;
+  /** Genetic or inferred ancestry weights (EUR/AFR/EAS/…) */
+  ancestryProportions?: Record<string, number>;
+  ancestryConfidence?: number;
+  ancestryInferenceMethod?: "pca_1kg" | "self_report" | "uniform_mixture";
   familyHistory?: FamilyHistoryInput;
+}
+
+export interface RiskUncertainty {
+  lifetimeRiskPercent: number;
+  ciLow: number;
+  ciHigh: number;
+  confidenceScore: number;
+  prsCoverage: number;
+  ancestryConfidence: number;
+  method: string;
 }
 
 export interface AbsoluteRiskBreakdown {
   cancerType?: CancerType;
   baselineLifetimeRisk: number;
-  rrPrs: number;
-  rrClinical: number;
+  /** exp(log RR) — display only; do not multiply with other factors */
   rrTotal: number;
+  logRelativeRisk: number;
+  logComponents?: {
+    prs: number;
+    familyHistory: number;
+    age: number;
+    ancestry: number;
+    clinicalPrior: number;
+  };
   absoluteLifetimeRisk: number;
   absoluteLifetimeRiskPercent: number;
+  uncertainty?: RiskUncertainty;
   method: string;
 }
 
@@ -51,6 +73,7 @@ export interface PopulationCancerRisk {
   isPopulationEstimate: boolean;
   whatWouldShift: string[];
   absoluteRisk?: AbsoluteRiskBreakdown;
+  uncertainty?: RiskUncertainty;
   clinicalModel?: string;
 }
 
