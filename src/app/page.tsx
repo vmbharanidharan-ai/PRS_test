@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
+import { DataModeSelector } from "@/components/consent/DataModeSelector";
 import { DnaUploadFlow } from "@/components/home/DnaUploadFlow";
 import { HomeEntry } from "@/components/home/HomeEntry";
 import { ProfileBuilder } from "@/components/home/ProfileBuilder";
 import { ResultsPage } from "@/components/ResultsPage";
 import { useAnalysis } from "@/hooks/useAnalysis";
+import { syncRiskToCloud } from "@/lib/api-client";
+import { getDataMode, isAccountMode } from "@/lib/data-mode";
 import { decodeSharePayload, readShareFromHash } from "@/lib/share-report";
 
 type Screen = "home" | "demo" | "upload" | "profile";
 
 export default function HomePage() {
+  const [dataModeReady, setDataModeReady] = useState<boolean | null>(null);
   const [screen, setScreen] = useState<Screen>("home");
   const {
     result,
@@ -25,12 +29,20 @@ export default function HomePage() {
   } = useAnalysis();
 
   useEffect(() => {
+    setDataModeReady(!!getDataMode());
     const encoded = readShareFromHash();
     if (!encoded) return;
     decodeSharePayload(encoded).then((shared) => {
       if (shared) loadSharedResult(shared);
     });
   }, [loadSharedResult]);
+
+  useEffect(() => {
+    if (!result || !isAccountMode()) return;
+    syncRiskToCloud(result).catch(() => {
+      /* API optional — local report still valid */
+    });
+  }, [result]);
 
   const goHome = () => {
     reset();
@@ -41,9 +53,27 @@ export default function HomePage() {
     return (
       <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         <DisclaimerBanner />
+        {isAccountMode() && (
+          <p className="mb-4 text-xs text-brand-700">
+            Account mode — risk history synced to your private server storage.
+          </p>
+        )}
         <ResultsPage result={result} onReset={goHome} />
       </main>
     );
+  }
+
+  if (dataModeReady === false) {
+    return (
+      <main className="mx-auto max-w-2xl px-4 py-10">
+        <DisclaimerBanner />
+        <DataModeSelector onContinue={() => setDataModeReady(true)} />
+      </main>
+    );
+  }
+
+  if (dataModeReady === null) {
+    return null;
   }
 
   return (

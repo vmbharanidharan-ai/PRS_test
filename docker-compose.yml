@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: genescreen
+      POSTGRES_PASSWORD: genescreen
+      POSTGRES_DB: genescreen
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://genescreen:genescreen@postgres:5432/genescreen
+      JWT_SECRET: dev-secret-change-in-production
+      RESEARCH_SALT: dev-research-salt
+      CORS_ORIGINS: http://localhost:3000
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:
